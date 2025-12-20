@@ -14,25 +14,38 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet("/api/auth/login")
 public class AuthController extends HttpServlet{
+
     private final AuthService authService = new AuthService();
     private final Gson gson = new Gson();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json; charset=UTF-8");
 
-        LoginRequest body = gson.fromJson(req.getReader(), LoginRequest.class);
-
         try {
-            LoginResponse login = authService.login(body.getIdentifier(), body.getPassword());
+            LoginRequest body = gson.fromJson(req.getReader(), LoginRequest.class);
+
+            LoginResponse login = authService.login(body); // Debe incluir token
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write(gson.toJson(login));
-        } catch (IllegalArgumentException e) {
+
+        } catch (SecurityException e) {
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            resp.getWriter().write("{\"error\":\"" + escape(e.getMessage()) + "\"}");
+
+        } catch (IllegalArgumentException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"" + escape(e.getMessage()) + "\"}");
+
         } catch (Exception e) {
+            e.printStackTrace();
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("{\"error\":\"Error interno\"}");
+            resp.getWriter().write("{\"error\":\"Error interno del servidor\"}");
         }
+    }
+
+    private String escape(String s) {
+        return s == null ? "" : s.replace("\"", "\\\"");
     }
 }

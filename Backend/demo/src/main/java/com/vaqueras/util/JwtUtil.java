@@ -89,4 +89,49 @@ public class JwtUtil {
     private static String escapeJson(String s) {
         return s == null ? "" : s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
+
+    //actualice lo siguiente para tener uso de tokens de usuario
+
+    public static com.vaqueras.model.TokenUser getUserFromToken(String token) {
+        if (token == null) return null;
+
+        String[] parts = token.split("\\.");
+        if (parts.length != 3) return null;
+
+        String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+
+        long sub = readLongClaim(payloadJson, "sub");
+        String nick = readStringClaim(payloadJson, "nick");
+        String rol = readStringClaim(payloadJson, "rol");
+
+        if (sub < 0 || rol == null) return null;
+        return new com.vaqueras.model.TokenUser((int) sub, nick, rol);
+    }
+
+    private static String readStringClaim(String json, String key) {
+        // Busca: "key":"value"
+        String pattern = "\"" + key + "\":\"";
+        int idx = json.indexOf(pattern);
+        if (idx < 0) return null;
+        idx += pattern.length();
+
+        int end = idx;
+        while (end < json.length()) {
+            char c = json.charAt(end);
+            if (c == '"' && json.charAt(end - 1) != '\\') break;
+            end++;
+        }
+        if (end >= json.length()) return null;
+
+        String raw = json.substring(idx, end);
+        return raw.replace("\\\"", "\"").replace("\\\\", "\\");
+    }
+
+    public static String extractBearerToken(jakarta.servlet.http.HttpServletRequest req) {
+        String auth = req.getHeader("Authorization");
+        if (auth == null) return null;
+        auth = auth.trim();
+        if (!auth.startsWith("Bearer ")) return null;
+        return auth.substring("Bearer ".length()).trim();
+    }
 }
