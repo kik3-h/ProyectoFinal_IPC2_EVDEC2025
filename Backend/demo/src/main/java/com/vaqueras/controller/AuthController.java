@@ -26,6 +26,10 @@ public class AuthController extends HttpServlet{
         try {
             LoginRequest body = gson.fromJson(req.getReader(), LoginRequest.class);
 
+            if (body == null) {
+                throw new IllegalArgumentException("El cuerpo de la solicitud está vacío");
+            }
+            
             LoginResponse login = authService.login(body); // Debe incluir token
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write(gson.toJson(login));
@@ -39,6 +43,7 @@ public class AuthController extends HttpServlet{
             resp.getWriter().write("{\"error\":\"" + escape(e.getMessage()) + "\"}");
 
         } catch (Exception e) {
+            // 500 - Error interno del servidor
             e.printStackTrace();
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"error\":\"Error interno del servidor\"}");

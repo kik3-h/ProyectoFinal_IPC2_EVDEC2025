@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class DatabaseConfig {
     
-    private static Connection conn;
+    //private static Connection conn;
     private final String URL =
             "jdbc:mysql://localhost:3306/db_vaqueras?useSSL=false&serverTimezone=UTC";
     private final String USER = "root";

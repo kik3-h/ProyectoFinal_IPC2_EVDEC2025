@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.google.gson.Gson;
 import com.vaqueras.model.TokenUser;
+import com.vaqueras.service.TokenBlacklistService;
 import com.vaqueras.util.JwtUtil;
 
 import jakarta.servlet.Filter;
@@ -36,33 +37,39 @@ public class AuthorizationFilter implements Filter {
 
         String path = getPath(req);
 
-        // Públicos
+        // rutas Públicos
         if (isPublic(path, req.getMethod())) {
             chain.doFilter(request, response);
             return;
         }
 
-        // JWT requerido
+        // valido que exista el token
         String token = JwtUtil.extractBearerToken(req);
         if (token == null || !JwtUtil.isValid(token)) {
             deny(resp, HttpServletResponse.SC_UNAUTHORIZED, "Token faltante/ inválido");
             return;
         }
-
+        // valido si el usuario hizo logout previamente
+        if (TokenBlacklistService.isRevoked(token)) {
+            deny(resp, HttpServletResponse.SC_UNAUTHORIZED, "Sesión cerrada (Token revocado)");
+            return;
+        }
+        //Obtener Usuario y Validar
         TokenUser user = JwtUtil.getUserFromToken(token);
+
         if (user == null) {
-            deny(resp, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+            deny(resp, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido o expirado");
             return;
         }
 
-        // Rol requerido según prefijo
+        // validacion de roles
         String required = requiredRole(path);
         if (required != null && !required.equalsIgnoreCase(user.getRol())) {
-            deny(resp, HttpServletResponse.SC_FORBIDDEN, "No autorizado para este recurso");
+            deny(resp, HttpServletResponse.SC_FORBIDDEN, "Acceso denegado: Rol insuficiente");
             return;
         }
 
-        // Opcional: pasar el user al request para controllers
+        // Inyectar usuario para los Controllers
         req.setAttribute("AUTH_USER", user);
 
         chain.doFilter(request, response);
@@ -70,7 +77,7 @@ public class AuthorizationFilter implements Filter {
 
     private boolean isPublic(String path, String method) {
         if (path.equals("/api/auth/login")) return true;
-        if (path.equals("/api/auth/session")) return true;  // devuelve 401 si no hay token
+       // if (path.equals("/api/auth/session")) return true;  // no deberia ser publico pq se necesita validar el token primero
         if (path.equals("/api/auth/logout")) return true;   // logout client-side
 
         // Registro público (ajusta si tu endpoint es otro)
@@ -83,7 +90,7 @@ public class AuthorizationFilter implements Filter {
         if (path.startsWith("/api/admin/") || path.equals("/api/admin")) return "ADMIN";
         if (path.startsWith("/api/empresa/") || path.equals("/api/empresa")) return "EMPRESA";
         if (path.startsWith("/api/gamer/") || path.equals("/api/gamer")) return "GAMER";
-        return null; // solo requiere estar autenticado
+        return null; 
     }
 
     private String getPath(HttpServletRequest req) {

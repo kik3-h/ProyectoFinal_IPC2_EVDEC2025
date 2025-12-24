@@ -23,4 +23,11 @@ public class LoginResponse {
     public String getNickname() { return nickname; }
     public String getEmail() { return email; }
     public String getRol() { return rol; }
+
+    public void setToken(String token) { this.token = token; }
+    public void setIdUser(int idUser) { this.idUser = idUser; } 
+    public void setNickname(String nickname) { this.nickname = nickname; }
+    public void setEmail(String email) { this.email = email; }
+    public void setRol(String rol) { this.rol = rol; }
+    
 }

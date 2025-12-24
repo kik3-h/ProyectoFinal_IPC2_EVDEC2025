@@ -22,15 +22,17 @@ public class SessionController extends HttpServlet{
         resp.setContentType("application/json; charset=UTF-8");
 
         String token = JwtUtil.extractBearerToken(req);
+
         if (token == null || !JwtUtil.isValid(token)) {
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("{\"authenticated\":false}");
             return;
         }
 
         TokenUser user = JwtUtil.getUserFromToken(token);
+        
         if (user == null) {
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("{\"authenticated\":false}");
             return;
         }

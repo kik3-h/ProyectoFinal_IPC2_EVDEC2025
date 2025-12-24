@@ -8,9 +8,13 @@ import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.vaqueras.model.TokenUser; 
+
 public class JwtUtil {
     private static final String SECRET = "VAQUERAS_SUPER_SECRET_CAMBIAME_2025";
-    private static final long EXP_SECONDS = 60L * 60L * 6L; // 6 horas
+    private static final long EXP_SECONDS = 60L * 60L * 6L; // 6 horas para pruebas y demas (como procrastino jasjja)
 
     public static String generateToken(int idUser, String nickname, String rol) {
         String headerJson = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
@@ -18,7 +22,7 @@ public class JwtUtil {
         long now = Instant.now().getEpochSecond();
         long exp = now + EXP_SECONDS;
 
-        // payload mínimo útil para Angular: sub(id), nick, rol, iat, exp
+        // Construcción del JSON usando String.format que me es mas simple y efectivo
         String payloadJson = String.format(
                 "{\"sub\":%d,\"nick\":\"%s\",\"rol\":\"%s\",\"iat\":%d,\"exp\":%d}",
                 idUser,
@@ -36,28 +40,51 @@ public class JwtUtil {
         return signingInput + "." + signature;
     }
 
-    public static boolean isValid(String token) {
+    public static TokenUser getUserFromToken(String token) {
         try {
-            String[] parts = token.split("\\.");
-            if (parts.length != 3) return false;
+            if (token == null || token.isBlank()) return null;
 
+            String[] parts = token.split("\\.");
+            if (parts.length != 3) return null;
+
+            // Validar Firma
             String signingInput = parts[0] + "." + parts[1];
             String expectedSig = hmacSha256(signingInput, SECRET);
 
-            // comparación constante para evitar timing attacks (buenas prácticas)
+            // Comparación segura contra timing attacks
             if (!MessageDigest.isEqual(expectedSig.getBytes(StandardCharsets.UTF_8),
                     parts[2].getBytes(StandardCharsets.UTF_8))) {
-                return false;
+                return null; // Firma inválida
             }
 
+            // Decodificar Payload usando GSON
             String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-            long exp = readLongClaim(payloadJson, "exp");
-            long now = Instant.now().getEpochSecond();
+            JsonObject obj = JsonParser.parseString(payloadJson).getAsJsonObject();
 
-            return now <= exp;
+            //Validar Expiración
+            long exp = obj.get("exp").getAsLong();
+            long now = Instant.now().getEpochSecond();
+            if (now > exp) {
+                return null; // Token expirado
+            }
+
+            // Extraer datos para el usuario
+            int sub = obj.get("sub").getAsInt();
+            // Validamos que existan los campos para evitar NullPointer
+            String nick = obj.has("nick") && !obj.get("nick").isJsonNull() ? obj.get("nick").getAsString() : "";
+            String rol = obj.has("rol") && !obj.get("rol").isJsonNull() ? obj.get("rol").getAsString() : "";
+
+            return new TokenUser(sub, nick, rol);
+
         } catch (Exception e) {
-            return false;
+            // Si el JSON está mal formado o hay error de parsing
+            return null;
         }
+    }
+
+    public static boolean isValid(String token) {
+        // si devuelve objeto es true, si es null es false
+        return getUserFromToken(token) != null;
     }
 
     private static String hmacSha256(String data, String secret) {
@@ -75,58 +102,13 @@ public class JwtUtil {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    private static long readLongClaim(String json, String key) {
-        // parser mínimo (sin libs) buscando: "key":123
-        String pattern = "\"" + key + "\":";
-        int idx = json.indexOf(pattern);
-        if (idx < 0) return -1;
-        idx += pattern.length();
-        int end = idx;
-        while (end < json.length() && Character.isDigit(json.charAt(end))) end++;
-        return Long.parseLong(json.substring(idx, end));
-    }
+    
 
     private static String escapeJson(String s) {
         return s == null ? "" : s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
-    //actualice lo siguiente para tener uso de tokens de usuario
-
-    public static com.vaqueras.model.TokenUser getUserFromToken(String token) {
-        if (token == null) return null;
-
-        String[] parts = token.split("\\.");
-        if (parts.length != 3) return null;
-
-        String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-
-        long sub = readLongClaim(payloadJson, "sub");
-        String nick = readStringClaim(payloadJson, "nick");
-        String rol = readStringClaim(payloadJson, "rol");
-
-        if (sub < 0 || rol == null) return null;
-        return new com.vaqueras.model.TokenUser((int) sub, nick, rol);
-    }
-
-    private static String readStringClaim(String json, String key) {
-        // Busca: "key":"value"
-        String pattern = "\"" + key + "\":\"";
-        int idx = json.indexOf(pattern);
-        if (idx < 0) return null;
-        idx += pattern.length();
-
-        int end = idx;
-        while (end < json.length()) {
-            char c = json.charAt(end);
-            if (c == '"' && json.charAt(end - 1) != '\\') break;
-            end++;
-        }
-        if (end >= json.length()) return null;
-
-        String raw = json.substring(idx, end);
-        return raw.replace("\\\"", "\"").replace("\\\\", "\\");
-    }
-
+    
     public static String extractBearerToken(jakarta.servlet.http.HttpServletRequest req) {
         String auth = req.getHeader("Authorization");
         if (auth == null) return null;

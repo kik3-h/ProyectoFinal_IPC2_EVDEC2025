@@ -8,12 +8,10 @@ import com.vaqueras.util.JwtUtil;
 import com.vaqueras.util.PasswordUtil;
 
 public class AuthService {
-    private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO(); //creo una instancia del DAO
 
-    public LoginResponse login(LoginRequest req) {
-
-        
-        
+    public LoginResponse login(LoginRequest req) {    
+        // Validar datos de entrada
         if (req == null || isBlank(req.getIdentifier()) || isBlank(req.getPassword())) {
             throw new IllegalArgumentException("Credenciales incompletas");
         }
@@ -32,7 +30,7 @@ public class AuthService {
         if (!hashed.equals(u.getPassword())) {
             throw new SecurityException("Credenciales inválidas");
         }
-        // Esto es obligatorio para que Angular pueda mantener la sesión
+        // generar Token JWT 
         String token = JwtUtil.generateToken(u.getIdUser(), u.getNickname(), u.getRol());
 
         // 5. Retornar respuesta con Token (como en la v1)
@@ -45,7 +43,7 @@ public class AuthService {
         );
     }
 
-    // Método auxiliar (de la v2)
+    // Método auxiliar para validar cadenas vacías
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
