@@ -82,7 +82,8 @@ public class AuthorizationFilter implements Filter {
 
         // Registro público (ajusta si tu endpoint es otro)
         if (path.equals("/api/usuarios") && "POST".equalsIgnoreCase(method)) return true;
-
+        if (path.equals("/api/categorias") && "GET".equalsIgnoreCase(method)) return true;
+        if (path.equals("/api/banner") && "GET".equalsIgnoreCase(method)) return true;
         return false;
     }
 
