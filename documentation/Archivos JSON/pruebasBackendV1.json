@@ -1,0 +1,182 @@
+{
+	"info": {
+		"_postman_id": "b5432100-1234-5678-9abc-def123456789",
+		"name": "Proyecto Vaqueras - Pruebas Backend Fase 1 Enrique Hernandez",
+		"description": "Colección de pruebas para el proyecto final del curso IPC2. Incluye flujo de autenticación JWT.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Crear Usuario (Registro)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nickname\": \"admin prueba1\",\n  \"email\": \"admin@vaqueras1.com\",\n  \"password\": \"admin123\",\n  \"telefono\": \"12345678\",\n  \"fechaNacimiento\": \"2000-01-01\",\n  \"pais\": \"GT\",\n  \"rol\": \"ADMIN\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/usuarios",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"usuarios"
+					]
+				},
+				"description": "Crea un nuevo usuario en la base de datos."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Iniciar Sesión (Obtener Token)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Instrucción: Si el backend devuelve un JSON con el token,",
+							"// Postman intentará guardarlo. Si no, copiar manualmente.",
+							"var jsonData = pm.response.json();",
+							"// Ajusta 'token' o 'accessToken' según como se llame en tu respuesta Java",
+							"if (jsonData.token) {",
+							"    pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
+							"    console.log(\"Token guardado automáticamente\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"identifier\": \"admin@vaqueras1.com\",\n  \"password\": \"admin123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				},
+				"description": "Genera el JWT. NOTA PARA LA REVISION: Copiar el token de la respuesta y actualizar la variable de colección 'jwt_token' si no se hace automáticamente."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Verificar Sesión (Requiere Token)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/auth/session",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"session"
+					]
+				},
+				"description": "Verificar que el token sea válido y devuelve la info del usuario."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Prueba Admin (Validación Rol)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/admin/algo",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"admin",
+						"algo"
+					]
+				},
+				"description": "Prueba de endpoint protegido por rol. Debería dar error si no es Admin o éxito si lo es."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Logout",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/auth/logout",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"logout"
+					]
+				},
+				"description": "Invalida la sesión o borra el token en el cliente."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/vaqueras-backend/api",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "PEGAR_TOKEN_AQUI_DESPUES_DEL_LOGIN",
+			"type": "string"
+		}
+	]
+}
