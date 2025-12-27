@@ -77,13 +77,21 @@ public class AuthorizationFilter implements Filter {
 
     private boolean isPublic(String path, String method) {
         if (path.equals("/api/auth/login")) return true;
-       // if (path.equals("/api/auth/session")) return true;  // no deberia ser publico pq se necesita validar el token primero
-        if (path.equals("/api/auth/logout")) return true;   // logout client-side
-
-        // Registro público (ajusta si tu endpoint es otro)
+        if (path.equals("/api/auth/logout")) return true;
         if (path.equals("/api/usuarios") && "POST".equalsIgnoreCase(method)) return true;
-        if (path.equals("/api/categorias") && "GET".equalsIgnoreCase(method)) return true;
-        if (path.equals("/api/banner") && "GET".equalsIgnoreCase(method)) return true;
+        if ("GET".equalsIgnoreCase(method)) {
+            
+            // alfinal por errores uso startsWith para permitir
+            // - /api/empresas (Lista)
+            // - /api/empresas/5 (Detalle por ID)
+            if (path.startsWith("/api/empresas")) return true;
+            
+            if (path.startsWith("/api/categorias")) return true;
+            if (path.startsWith("/api/banner")) return true;
+            
+            // Si los videojuegos también son públicos para ver sin login:
+            if (path.startsWith("/api/videojuegos")) return true;
+        }
         return false;
     }
 
