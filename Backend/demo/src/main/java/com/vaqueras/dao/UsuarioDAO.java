@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -166,5 +167,62 @@ public boolean updateEstadoCuenta(int idUser, String estado) {
             throw new RuntimeException("Error SQL al actualizar estado: " + e.getMessage());
         }
 
+    }
+
+    //agregando mas metodos para funciones de perfil del usuario gamer
+
+    public com.vaqueras.model.GamerProfileDTO findGamerProfileById(int idUser) {
+        String sql = """
+        SELECT id_user, nickname, email, telefono, fecha_nacimiento, pais, biblioteca_publica
+        FROM usuario
+        WHERE id_user = ?
+        """;
+
+        try (Connection con = dbConfig.conectar();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setInt(1, idUser);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (!rs.next()) return null;
+
+            com.vaqueras.model.GamerProfileDTO dto = new com.vaqueras.model.GamerProfileDTO();
+            dto.setIdUser(rs.getInt("id_user"));
+            dto.setNickname(rs.getString("nickname"));
+            dto.setEmail(rs.getString("email"));
+            dto.setTelefono(rs.getString("telefono"));
+            dto.setFechaNacimiento(String.valueOf(rs.getDate("fecha_nacimiento")));
+            dto.setPais(rs.getString("pais"));
+            dto.setBibliotecaPublica(rs.getBoolean("biblioteca_publica"));
+            return dto;
+        }
+
+    } catch (SQLException e) {
+        throw new RuntimeException("Error obteniendo perfil: " + e.getMessage(), e);
+    }
+}
+
+public boolean updateGamerProfile(int idUser, String telefono, String pais, Boolean bibliotecaPublica) {
+    StringBuilder sb = new StringBuilder("UPDATE usuario SET ");
+    java.util.List<Object> params = new java.util.ArrayList<>();
+
+    if (telefono != null) { sb.append("telefono = ?, "); params.add(telefono.trim()); }
+    if (pais != null) { sb.append("pais = ?, "); params.add(pais.trim()); }
+    if (bibliotecaPublica != null) { sb.append("biblioteca_publica = ?, "); params.add(bibliotecaPublica); }
+
+    if (params.isEmpty()) return false;
+
+    sb.setLength(sb.length() - 2);
+    sb.append(" WHERE id_user = ? AND rol = 'GAMER'");
+    params.add(idUser);
+
+    try (Connection con = dbConfig.conectar();
+        PreparedStatement ps = con.prepareStatement(sb.toString())) {
+
+        for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+        return ps.executeUpdate() > 0;
+
+    } catch (SQLException e) {
+        throw new RuntimeException("Error actualizando perfil: " + e.getMessage(), e);
+    }
     }
 }
