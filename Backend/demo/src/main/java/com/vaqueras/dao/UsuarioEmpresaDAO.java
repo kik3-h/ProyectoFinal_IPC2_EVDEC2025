@@ -29,11 +29,25 @@ public class UsuarioEmpresaDAO {
     // para transacción en el create
     public void link(Connection conn, int idUser, int idEmpresa, String cargo) throws SQLException {
     String sql = "INSERT INTO usuario_empresa (id_user, id_empresa, cargo) VALUES (?,?,?)";
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setInt(2, idEmpresa);
+            ps.setString(3, cargo);
+            ps.executeUpdate();
+        }
+    }
+
+    public Integer findFirstEmpresaIdByUser(int idUser) {
+    String sql = "SELECT id_empresa FROM usuario_empresa WHERE id_user = ? ORDER BY id_usuario_empresa ASC LIMIT 1";
+    try (Connection conn = db.conectar();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setInt(1, idUser);
-        ps.setInt(2, idEmpresa);
-        ps.setString(3, cargo);
-        ps.executeUpdate();
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt("id_empresa");
+        }
+        return null;
+    } catch (SQLException e) {
+        throw new RuntimeException("Error obteniendo empresa del usuario: " + e.getMessage(), e);
     }
 }
 }

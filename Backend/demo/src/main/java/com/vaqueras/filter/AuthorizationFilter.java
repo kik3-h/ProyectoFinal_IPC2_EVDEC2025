@@ -90,7 +90,7 @@ public class AuthorizationFilter implements Filter {
             if (path.startsWith("/api/banner")) return true;
             
             // Si los videojuegos también son públicos para ver sin login:
-            if (path.startsWith("/api/videojuegos")) return true;
+            if (path.startsWith("/api/videojuegos") && "GET".equalsIgnoreCase(method)) return true;
         }
         return false;
     }
