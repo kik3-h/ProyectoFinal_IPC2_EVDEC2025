@@ -28,10 +28,24 @@ public class VideojuegoController extends HttpServlet {
 
         String path = req.getPathInfo(); // null, "/", "/{id}"
         try {
+            //listamos todos los juegos
             if (path == null || "/".equals(path)) {
                 resp.setStatus(HttpServletResponse.SC_OK);
                 resp.getWriter().write(gson.toJson(service.listarPublico()));
                 return;
+            }
+
+            //Listar comentarios de un juego /api/videojuegos/{id}/comentarios
+            if (path.matches("/\\d+/comentarios")) {
+                // ["", "123", "comentarios"]
+                int id = Integer.parseInt(path.split("/")[1]);
+                
+                // Instanciamos el servicio aquí 
+                com.vaqueras.service.ComentarioService cs = new com.vaqueras.service.ComentarioService();
+                
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.getWriter().write(gson.toJson(cs.listarPublico(id)));
+                return; // Importante: retornar para que no siga ejecutando
             }
 
             if (!path.matches("/\\d+")) {

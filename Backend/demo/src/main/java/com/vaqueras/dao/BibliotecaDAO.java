@@ -66,4 +66,76 @@ public class BibliotecaDAO {
         }
         return out;
     }
+
+    //se agrega este modulo nuevo 
+
+    public boolean hasAny(Connection conn, int idUser, int idVideojuego) throws SQLException {
+    String sql = "SELECT 1 FROM biblioteca WHERE id_user = ? AND id_videojuego = ? LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setInt(2, idVideojuego);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
+        }
+    }
+
+    public boolean isOwner(Connection conn, int idUser, int idVideojuego) throws SQLException {
+        String sql = "SELECT 1 FROM biblioteca WHERE id_user = ? AND id_videojuego = ? AND es_propietario = TRUE LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setInt(2, idVideojuego);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
+        }
+    }
+
+    public boolean isBorrowed(Connection conn, int idUser, int idVideojuego) throws SQLException {
+        String sql = "SELECT 1 FROM biblioteca WHERE id_user = ? AND id_videojuego = ? AND es_propietario = FALSE LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setInt(2, idVideojuego);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
+        }
+    }
+
+    public void insertBorrowed(Connection conn, int idUser, int idVideojuego) throws SQLException {
+        String sql = """
+            INSERT INTO biblioteca (id_user, id_videojuego, estado_instalacion, es_propietario)
+            VALUES (?, ?, 'NO_INSTALADO', FALSE)
+        """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setInt(2, idVideojuego);
+            ps.executeUpdate();
+        }
+    }
+
+    public String getEstadoInstalacion(Connection conn, int idUser, int idVideojuego) throws SQLException {
+        String sql = "SELECT estado_instalacion FROM biblioteca WHERE id_user = ? AND id_videojuego = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setInt(2, idVideojuego);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+                return rs.getString("estado_instalacion");
+            }
+        }
+    }
+
+    public void updateEstadoInstalacion(Connection conn, int idUser, int idVideojuego, String estado) throws SQLException {
+        String sql = "UPDATE biblioteca SET estado_instalacion = ? WHERE id_user = ? AND id_videojuego = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, estado);
+            ps.setInt(2, idUser);
+            ps.setInt(3, idVideojuego);
+            ps.executeUpdate();
+        }
+    }
+
+    public void deleteBorrowed(Connection conn, int idUser, int idVideojuego) throws SQLException {
+        String sql = "DELETE FROM biblioteca WHERE id_user = ? AND id_videojuego = ? AND es_propietario = FALSE";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setInt(2, idVideojuego);
+            ps.executeUpdate();
+        }
+    }
 }

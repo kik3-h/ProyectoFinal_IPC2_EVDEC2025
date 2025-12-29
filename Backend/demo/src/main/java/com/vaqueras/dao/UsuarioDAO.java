@@ -237,4 +237,36 @@ public boolean updateGamerProfile(int idUser, String telefono, String pais, Bool
         }
     }
 }
+    //se agrega estos modulos
+
+        public Integer findIdByNicknameAndRol(String nickname, String rol) {
+        String sql = "SELECT id_user FROM usuario WHERE nickname = ? AND rol = ? LIMIT 1";
+        try (Connection con = dbConfig.conectar();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, nickname);
+            ps.setString(2, rol);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("id_user");
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error buscando usuario: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean isRol(int idUser, String rol) {
+        String sql = "SELECT 1 FROM usuario WHERE id_user = ? AND rol = ? LIMIT 1";
+        try (Connection con = dbConfig.conectar();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ps.setString(2, rol);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error validando rol: " + e.getMessage(), e);
+        }
+    }
+    
+
 }
