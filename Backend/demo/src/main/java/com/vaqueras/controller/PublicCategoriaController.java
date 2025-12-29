@@ -3,22 +3,24 @@ package com.vaqueras.controller;
 import java.io.IOException;
 
 import com.google.gson.Gson;
-import com.vaqueras.service.CategoriaService;
+import com.vaqueras.service.AdminCategoriaService;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-//servlet que solo me permite ver las categorias creadas unicamente
-@WebServlet("/api/admin/categorias")
-public class CategoriaController extends HttpServlet {
-    private final CategoriaService service = new CategoriaService();
+//servlet que me permite ver las categorias creadas unicamente de manera publica sin rol asignado
+@WebServlet("/api/public/categorias")
+
+public class PublicCategoriaController extends HttpServlet{
+    
+    private final AdminCategoriaService service = new AdminCategoriaService();
     private final Gson gson = new Gson();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json; charset=UTF-8");
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(gson.toJson(service.listarPublico()));
+        resp.setStatus(200);
+        resp.getWriter().write(gson.toJson(service.list()));
     }
 }
