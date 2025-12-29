@@ -225,4 +225,16 @@ public boolean updateGamerProfile(int idUser, String telefono, String pais, Bool
         throw new RuntimeException("Error actualizando perfil: " + e.getMessage(), e);
     }
     }
+    //se agrega esto tambien para obtener la fecha de nacimiento del usuario
+    public java.time.LocalDate getFechaNacimiento(Connection conn, int idUser) throws java.sql.SQLException {
+    String sql = "SELECT fecha_nacimiento FROM usuario WHERE id_user = ?";
+    try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, idUser);
+        try (java.sql.ResultSet rs = ps.executeQuery()) {
+            if (!rs.next()) return null;
+            java.sql.Date d = rs.getDate("fecha_nacimiento");
+            return d != null ? d.toLocalDate() : null;
+        }
+    }
+}
 }

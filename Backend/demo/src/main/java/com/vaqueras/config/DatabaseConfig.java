@@ -8,7 +8,7 @@ public class DatabaseConfig {
     
     //private static Connection conn;
     private final String URL =
-            "jdbc:mysql://localhost:3306/db_vaqueras?useSSL=false&serverTimezone=UTC";
+            "jdbc:mysql://localhost:3306/db_vaqueras?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private final String USER = "root";
     private final String PASSWORD = "Kik3Xela1980rose";
 

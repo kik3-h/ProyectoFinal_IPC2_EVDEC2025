@@ -73,4 +73,14 @@ public class CarteraDAO {
             ps.executeUpdate();
         }
     }
+
+    public boolean decrementIfEnough(Connection conn, int idUser, java.math.BigDecimal monto) throws java.sql.SQLException {
+    String sql = "UPDATE cartera SET saldo_actual = saldo_actual - ? WHERE id_user = ? AND saldo_actual >= ?";
+    try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setBigDecimal(1, monto);
+        ps.setInt(2, idUser);
+        ps.setBigDecimal(3, monto);
+        return ps.executeUpdate() > 0;
+    }
+}
 }
