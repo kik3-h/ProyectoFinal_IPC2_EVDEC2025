@@ -85,11 +85,18 @@ public class PrestamoService {
             String actual = bibliotecaDAO.getEstadoInstalacion(conn, idUserBorrower, idVideojuego);
 
             if (st.equals("INSTALADO") && !"INSTALADO".equals(actual)) {
-                int instalados = miembroDAO.countInstaladosEnGrupo(conn, idGrupo, idVideojuego);
-                if (instalados >= MAX_INSTALACIONES_POR_JUEGO_EN_GRUPO) {
-                    throw new IllegalStateException("Límite de instalaciones alcanzado para este juego en el grupo");
-                }
+
+            int instalados = miembroDAO.countInstaladosEnGrupo(conn, idGrupo, idVideojuego);
+            if (instalados >= MAX_INSTALACIONES_POR_JUEGO_EN_GRUPO) {
+                throw new IllegalStateException("Límite de instalaciones alcanzado para este juego en el grupo");
             }
+
+            // Regla extra para que solo 1 usuario PRESTADO puede tenerlo INSTALADO (el otro cupo es para el propietario)
+            int prestadosInstalados = miembroDAO.countInstaladosPrestadosEnGrupo(conn, idGrupo, idVideojuego);
+            if (prestadosInstalados >= 1) {
+                throw new IllegalStateException("Ya hay un miembro con el préstamo instalado; solo se permite 1 prestado + propietario");
+            }
+        }
 
             bibliotecaDAO.updateEstadoInstalacion(conn, idUserBorrower, idVideojuego, st);
             instalacionDAO.upsert(conn, idUserBorrower, idVideojuego, st);

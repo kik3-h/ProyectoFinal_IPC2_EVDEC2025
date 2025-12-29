@@ -77,4 +77,24 @@ public class GrupoFamiliarDAO {
             throw new RuntimeException("Error listando grupos: " + e.getMessage(), e);
         }
     }
+    //agruegue esto por mejora en proceso de instalacion compartida con limite de 2
+    public List<Integer> listIdsByUser(Connection conn, int idUser) throws SQLException {
+    String sql = """
+        SELECT DISTINCT g.id_grupo
+        FROM grupo_familiar g
+        LEFT JOIN miembro_grupo mg ON mg.id_grupo = g.id_grupo
+        WHERE g.id_admin_user = ? OR mg.id_user = ?
+        ORDER BY g.id_grupo DESC
+    """;
+
+    List<Integer> out = new ArrayList<>();
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, idUser);
+        ps.setInt(2, idUser);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) out.add(rs.getInt("id_grupo"));
+        }
+    }
+    return out;
+    }
 }

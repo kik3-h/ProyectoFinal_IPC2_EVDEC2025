@@ -84,4 +84,24 @@ public class MiembroGrupoDAO {
             }
         }
     }
+    //agrego este metodo para contar instalaciones prestadas en grupo
+    public int countInstaladosPrestadosEnGrupo(Connection conn, int idGrupo, int idVideojuego) throws SQLException {
+    String sql = """
+        SELECT COUNT(*) AS total
+        FROM biblioteca b
+        JOIN miembro_grupo mg ON mg.id_user = b.id_user
+        WHERE mg.id_grupo = ?
+        AND b.id_videojuego = ?
+        AND b.estado_instalacion = 'INSTALADO'
+        AND b.es_propietario = FALSE
+    """;
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, idGrupo);
+        ps.setInt(2, idVideojuego);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (!rs.next()) return 0;
+            return rs.getInt("total");
+        }
+    }
+}
 }
