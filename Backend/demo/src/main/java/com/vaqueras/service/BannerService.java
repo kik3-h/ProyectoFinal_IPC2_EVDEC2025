@@ -16,10 +16,16 @@ public class BannerService {
         return dao.findAll();
     }
 
+    // Método necesario para el Controller de Admin (Editar)
+    public BannerPrincipal obtenerPorId(int id) {
+        return dao.findById(id);
+    }
+
     public int crear(BannerPrincipal b) {
         validar(b);
-        if (b.getImagenUrl().trim().isEmpty()) throw new IllegalArgumentException("imagenUrl es obligatoria");
-        b.setImagenUrl(b.getImagenUrl().trim());
+        // MODIFICADO: Si es null, asignamos cadena vacía ""
+        String url = (b.getImagenUrl() == null) ? "" : b.getImagenUrl().trim();
+        b.setImagenUrl(url);
         return dao.create(b);
     }
 
@@ -30,10 +36,13 @@ public class BannerService {
         if (actual == null) throw new IllegalArgumentException("Banner no encontrado");
 
         b.setIdBanner(id);
-        b.setImagenUrl(b.getImagenUrl().trim());
+
+        // MODIFICADO donde Si es null, asignamos cadena vacía ""
+        String url = (b.getImagenUrl() == null) ? "" : b.getImagenUrl().trim();
+        b.setImagenUrl(url);
 
         boolean ok = dao.update(b);
-        if (!ok) throw new IllegalArgumentException("Banner no encontrado");
+        if (!ok) throw new IllegalArgumentException("No se pudo actualizar el banner");
     }
 
     public void eliminar(int id) {
@@ -41,17 +50,19 @@ public class BannerService {
         if (actual == null) throw new IllegalArgumentException("Banner no encontrado");
 
         boolean ok = dao.delete(id);
-        if (!ok) throw new IllegalArgumentException("Banner no encontrado");
+        if (!ok) throw new IllegalArgumentException("No se pudo eliminar el banner");
     }
 
     private void validar(BannerPrincipal b) {
         if (b == null) throw new IllegalArgumentException("Body requerido");
-        if (b.getImagenUrl() == null || b.getImagenUrl().trim().isEmpty())
-            throw new IllegalArgumentException("imagenUrl es obligatoria");
-        if (b.getImagenUrl().length() > 255)
+        // MODIFICADO: Ya no validamos que sea obligatorio ni vacío.
+        // Solo validamos longitud SI es que trae algo.
+        if (b.getImagenUrl() != null && b.getImagenUrl().length() > 255)
             throw new IllegalArgumentException("imagenUrl máximo 255 caracteres");
+            
         if (b.getPosicion() <= 0)
             throw new IllegalArgumentException("posicion debe ser > 0");
+        
         // idVideojuego puede ser null
     }
 }

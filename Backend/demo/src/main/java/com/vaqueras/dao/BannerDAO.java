@@ -9,13 +9,15 @@ import java.util.List;
 
 import com.vaqueras.config.DatabaseConfig;
 import com.vaqueras.model.BannerPrincipal;
+import com.vaqueras.model.ImageData;
 
 public class BannerDAO {
     private final DatabaseConfig dbConfig = new DatabaseConfig();
 
     public List<BannerPrincipal> findActive() {
         String sql = """
-            SELECT id_banner, id_videojuego, imagen_url, posicion, activo
+            SELECT id_banner, id_videojuego, imagen_url, posicion, activo,
+            (imagen_blob IS NOT NULL) AS has_blob
             FROM banner_principal
             WHERE activo = TRUE
             ORDER BY posicion ASC, id_banner ASC
@@ -39,7 +41,8 @@ public class BannerDAO {
 
     public List<BannerPrincipal> findAll() {
         String sql = """
-            SELECT id_banner, id_videojuego, imagen_url, posicion, activo
+            SELECT id_banner, id_videojuego, imagen_url, posicion, activo,
+            (imagen_blob IS NOT NULL) AS has_blob
             FROM banner_principal
             ORDER BY posicion ASC, id_banner ASC
         """;
@@ -62,13 +65,14 @@ public class BannerDAO {
 
     public BannerPrincipal findById(int id) {
         String sql = """
-            SELECT id_banner, id_videojuego, imagen_url, posicion, activo
+            SELECT id_banner, id_videojuego, imagen_url, posicion, activo,
+            (imagen_blob IS NOT NULL) AS has_blob
             FROM banner_principal
             WHERE id_banner = ?
         """;
 
         try (Connection con = dbConfig.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -88,7 +92,7 @@ public class BannerDAO {
         """;
 
         try (Connection con = dbConfig.conectar();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             if (b.getIdVideojuego() == null) ps.setNull(1, java.sql.Types.INTEGER);
             else ps.setInt(1, b.getIdVideojuego());
@@ -117,7 +121,7 @@ public class BannerDAO {
         """;
 
         try (Connection con = dbConfig.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql)) {
 
             if (b.getIdVideojuego() == null) ps.setNull(1, java.sql.Types.INTEGER);
             else ps.setInt(1, b.getIdVideojuego());
@@ -138,7 +142,7 @@ public class BannerDAO {
         String sql = "DELETE FROM banner_principal WHERE id_banner = ?";
 
         try (Connection con = dbConfig.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
@@ -148,6 +152,43 @@ public class BannerDAO {
         }
     }
 
+    // --- NUEVOS MÉTODOS PARA BLOB ---
+
+    public boolean updateBlob(int idBanner, byte[] bytes, String mime) {
+        // Al guardar un BLOB, vaciamos la imagen_url para que la lógica del map() funcione
+        String sql = "UPDATE banner_principal SET imagen_blob = ?, imagen_mime = ?, imagen_url = '' WHERE id_banner = ?";
+        try (Connection con = dbConfig.conectar();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setBytes(1, bytes);
+            ps.setString(2, mime);
+            ps.setInt(3, idBanner);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            throw new RuntimeException("Error actualizando imagen banner: " + e.getMessage(), e);
+        }
+    }
+
+    public ImageData findBlob(int idBanner) {
+        String sql = "SELECT imagen_blob, imagen_mime FROM banner_principal WHERE id_banner = ?";
+        try (Connection con = dbConfig.conectar();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idBanner);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+                
+                byte[] blob = rs.getBytes("imagen_blob");
+                String mime = rs.getString("imagen_mime");
+                
+                if (blob == null || blob.length == 0 || mime == null || mime.isBlank()) return null;
+                
+                return new ImageData(blob, mime);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error obteniendo imagen banner: " + e.getMessage(), e);
+        }
+    }
+
+    // MAP ACTUALIZADO para funciones BLOB
     private BannerPrincipal map(ResultSet rs) throws Exception {
         BannerPrincipal b = new BannerPrincipal();
         b.setIdBanner(rs.getInt("id_banner"));
@@ -155,9 +196,18 @@ public class BannerDAO {
         int idJuego = rs.getInt("id_videojuego");
         b.setIdVideojuego(rs.wasNull() ? null : idJuego);
 
-        b.setImagenUrl(rs.getString("imagen_url"));
         b.setPosicion(rs.getInt("posicion"));
         b.setActivo(rs.getBoolean("activo"));
+
+        // LÓGICA DE IMAGEN HÍBRIDA URL vs BLOB
+        boolean hasBlob = rs.getBoolean("has_blob");
+        String url = rs.getString("imagen_url");
+
+        if (hasBlob && (url == null || url.isBlank())) {
+            // Si tiene blob y no tiene URL externa, generamos la URL interna
+            url = "/vaqueras-backend/api/banners/imagen/" + b.getIdBanner();
+        }
+        b.setImagenUrl(url);
         return b;
     }
 }

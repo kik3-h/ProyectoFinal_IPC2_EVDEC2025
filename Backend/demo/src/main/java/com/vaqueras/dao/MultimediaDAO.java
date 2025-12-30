@@ -4,10 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.vaqueras.config.DatabaseConfig;
+import com.vaqueras.model.ImageData;
 import com.vaqueras.model.MultimediaDTO;
 
 public class MultimediaDAO {
@@ -22,12 +24,14 @@ public class MultimediaDAO {
             del.executeUpdate();
         }
 
-        // insertar portada
-        try (PreparedStatement ins = conn.prepareStatement(
-                "INSERT INTO multimedia (id_videojuego, url_imagen, tipo) VALUES (?,?, 'PORTADA')")) {
-            ins.setInt(1, idVideojuego);
-            ins.setString(2, portadaUrl);
-            ins.executeUpdate();
+        // insertar portada url 
+        if (portadaUrl != null && !portadaUrl.isBlank()) {
+            try (PreparedStatement ins = conn.prepareStatement(
+                    "INSERT INTO multimedia (id_videojuego, url_imagen, tipo) VALUES (?,?, 'PORTADA')")) {
+                ins.setInt(1, idVideojuego);
+                ins.setString(2, portadaUrl);
+                ins.executeUpdate();
+            }
         }
 
         if (galeriaUrls == null || galeriaUrls.isEmpty()) return;
@@ -45,26 +49,39 @@ public class MultimediaDAO {
     }
 
     public List<MultimediaDTO> findByVideojuego(int idVideojuego) {
+
         String sql = """
-            SELECT id_multimedia, url_imagen, tipo
+            SELECT id_multimedia, url_imagen, tipo,
+            (imagen_blob IS NOT NULL) AS has_blob
             FROM multimedia
             WHERE id_videojuego = ?
             ORDER BY
-              CASE tipo WHEN 'PORTADA' THEN 1 WHEN 'GALERIA' THEN 2 ELSE 3 END,
-              id_multimedia ASC
+            CASE tipo WHEN 'PORTADA' THEN 1 WHEN 'GALERIA' THEN 2 ELSE 3 END,
+            id_multimedia ASC
         """;
 
         List<MultimediaDTO> out = new ArrayList<>();
 
         try (Connection conn = db.conectar();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, idVideojuego);
+            
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
+
+                    int id = rs.getInt("id_multimedia");
+                    String url = rs.getString("url_imagen");
+                    boolean hasBlob = rs.getBoolean("has_blob");
+
+                    // LOGICA HÍBRIDA
+                    if (hasBlob && (url == null || url.isBlank())) {
+                        url = "/vaqueras-backend/api/multimedia/imagen/" + id;
+                    }
+
                     out.add(new MultimediaDTO(
-                            rs.getInt("id_multimedia"),
-                            rs.getString("url_imagen"),
+                            id,
+                            url,
                             rs.getString("tipo")
                     ));
                 }
@@ -73,6 +90,53 @@ public class MultimediaDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error listando multimedia: " + e.getMessage(), e);
+        }
+    }
+
+    // Nuevos metodos para Blob
+
+    public int createBlob(int idVideojuego, String tipo, byte[] bytes, String mime) {
+        String sql = "INSERT INTO multimedia (id_videojuego, url_imagen, tipo, imagen_blob, imagen_mime) VALUES (?,?,?,?,?)";
+        
+        try (Connection conn = db.conectar();
+            PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            ps.setInt(1, idVideojuego);
+            ps.setString(2, ""); // URL vacía porque es blob
+            ps.setString(3, tipo); // 'PORTADA' o 'GALERIA'
+            ps.setBytes(4, bytes);
+            ps.setString(5, mime);
+            
+            ps.executeUpdate();
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+            throw new SQLException("No se generó id_multimedia");
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error guardando imagen multimedia: " + e.getMessage(), e);
+        }
+    }
+
+    public ImageData findBlobById(int idMultimedia) {
+        String sql = "SELECT imagen_blob, imagen_mime FROM multimedia WHERE id_multimedia = ?";
+        try (Connection conn = db.conectar();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, idMultimedia);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+                
+                byte[] blob = rs.getBytes("imagen_blob");
+                String mime = rs.getString("imagen_mime");
+                
+                if (blob == null || blob.length == 0) return null;
+                
+                return new ImageData(blob, mime);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error leyendo imagen multimedia: " + e.getMessage(), e);
         }
     }
 }

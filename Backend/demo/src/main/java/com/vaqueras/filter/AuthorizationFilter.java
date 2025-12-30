@@ -81,11 +81,15 @@ public class AuthorizationFilter implements Filter {
         if (path.equals("/api/usuarios") && "POST".equalsIgnoreCase(method)) return true;
         if ("GET".equalsIgnoreCase(method)) {
             
+            //Permitir acceso público a las imágenes 
+            if (path.startsWith("/api/banners/imagen")) return true;
+            if (path.startsWith("/api/multimedia/imagen")) return true;
+            if (path.startsWith("/api/usuarios/avatar")) return true;
+
             // alfinal por errores uso startsWith para permitir
             // - /api/empresas (Lista)
             // - /api/empresas/5 (Detalle por ID)
-            if (path.startsWith("/api/empresas")) return true;
-            
+            if (path.startsWith("/api/empresas")) return true;            
             if (path.startsWith("/api/categorias")) return true;
             if (path.startsWith("/api/banner")) return true;
             
