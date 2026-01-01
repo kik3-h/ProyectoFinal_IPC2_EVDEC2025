@@ -1,0 +1,23 @@
+:root{
+  --vaq-primary: #004d98;   /* color inspirado en el barca jaja */
+  --vaq-secondary: #a50044; /* vamoos */
+}
+
+.bg-vaq-primary { background: var(--vaq-primary) !important; }
+.bg-vaq-secondary { background: var(--vaq-secondary) !important; }
+.text-vaq-primary { color: var(--vaq-primary) !important; }
+.text-vaq-secondary { color: var(--vaq-secondary) !important; }
+
+.btn-vaq {
+  background: var(--vaq-primary);
+  color: #fff;
+  border: none;
+}
+.btn-vaq:hover { filter: brightness(1.05); }
+
+.btn-vaq-secondary{
+  background: var(--vaq-secondary);
+  color: #fff;
+  border: none;
+}
+.btn-vaq-secondary:hover { filter: brightness(1.05); }
