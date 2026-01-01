@@ -104,12 +104,14 @@ public class VideojuegoDAO {
             return ps.executeUpdate() > 0;
         }
     }
-
+    //modificacion para este metodo para usar bien imagenes blob
     public List<VideojuegoPublicDTO> listPublicActivos() {
         String sql = """
             SELECT v.id_videojuego, v.titulo, v.precio, v.clasificacion_edad, v.edad_minima,
-                   e.id_empresa, e.nombre_empresa,
-                   m.url_imagen AS portada_url
+                e.id_empresa, e.nombre_empresa,
+                m.id_multimedia AS portada_id,
+                m.url_imagen AS portada_url,
+                (m.imagen_blob IS NOT NULL) AS portada_has_blob
             FROM videojuego v
             JOIN empresa e ON e.id_empresa = v.id_empresa
             LEFT JOIN multimedia m ON m.id_videojuego = v.id_videojuego AND m.tipo = 'PORTADA'
@@ -120,8 +122,8 @@ public class VideojuegoDAO {
         List<VideojuegoPublicDTO> out = new ArrayList<>();
 
         try (Connection conn = db.conectar();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 VideojuegoPublicDTO dto = new VideojuegoPublicDTO();
@@ -132,7 +134,17 @@ public class VideojuegoDAO {
                 dto.setEdadMinima(rs.getInt("edad_minima"));
                 dto.setIdEmpresa(rs.getInt("id_empresa"));
                 dto.setNombreEmpresa(rs.getString("nombre_empresa"));
-                dto.setPortadaUrl(rs.getString("portada_url"));
+
+                String url = rs.getString("portada_url");
+                boolean hasBlob = rs.getBoolean("portada_has_blob");
+                int portadaId = rs.getInt("portada_id");
+
+                // lógica híbrida URL vs BLOB
+                if (hasBlob && (url == null || url.isBlank()) && portadaId > 0) {
+                    url = "/vaqueras-backend/api/multimedia/imagen/" + portadaId;
+                }
+
+                dto.setPortadaUrl(url);
                 out.add(dto);
             }
             return out;
@@ -182,4 +194,61 @@ public class VideojuegoDAO {
             throw new RuntimeException("Error obteniendo videojuego: " + e.getMessage(), e);
         }
     }
+    //agrego este metodo para facilitar la obtencion de los videojuegos por empresa
+    public List<com.vaqueras.model.VideojuegoEmpresaDTO> listByEmpresa(int idEmpresa) {
+    String sql = """
+        SELECT v.id_videojuego, v.id_empresa, v.titulo, v.precio, v.estado,
+               v.clasificacion_edad, v.edad_minima, v.fecha_lanzamiento,
+               m.id_multimedia AS portada_id,
+               m.url_imagen AS portada_url,
+               (m.imagen_blob IS NOT NULL) AS portada_has_blob
+        FROM videojuego v
+        LEFT JOIN multimedia m ON m.id_videojuego = v.id_videojuego AND m.tipo = 'PORTADA'
+        WHERE v.id_empresa = ?
+        ORDER BY v.id_videojuego DESC
+    """;
+
+    List<com.vaqueras.model.VideojuegoEmpresaDTO> out = new ArrayList<>();
+
+    try (Connection conn = db.conectar();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, idEmpresa);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                com.vaqueras.model.VideojuegoEmpresaDTO dto = new com.vaqueras.model.VideojuegoEmpresaDTO();
+                dto.setIdVideojuego(rs.getInt("id_videojuego"));
+                dto.setIdEmpresa(rs.getInt("id_empresa"));
+                dto.setTitulo(rs.getString("titulo"));
+                dto.setPrecio(rs.getDouble("precio"));
+                dto.setEstado(rs.getString("estado"));
+                dto.setClasificacionEdad(rs.getString("clasificacion_edad"));
+                dto.setEdadMinima(rs.getInt("edad_minima"));
+
+                java.sql.Date f = rs.getDate("fecha_lanzamiento");
+                if (f != null) dto.setFechaLanzamiento(f.toLocalDate());
+
+                String url = rs.getString("portada_url");
+                boolean hasBlob = rs.getBoolean("portada_has_blob");
+                int portadaId = rs.getInt("portada_id");
+
+                // lógica híbrida URL vs BLOB (igual que ya haces en MultimediaDAO)
+                if (hasBlob && (url == null || url.isBlank()) && portadaId > 0) {
+                    url = "/vaqueras-backend/api/multimedia/imagen/" + portadaId;
+                }
+                dto.setPortadaUrl(url);
+
+                out.add(dto);
+            }
+        }
+
+        return out;
+
+    } catch (SQLException e) {
+        throw new RuntimeException("Error listando videojuegos por empresa: " + e.getMessage(), e);
+    }
+}
+
+
 }

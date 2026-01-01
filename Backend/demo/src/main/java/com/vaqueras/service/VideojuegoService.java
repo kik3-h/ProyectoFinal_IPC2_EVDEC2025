@@ -238,4 +238,27 @@ public class VideojuegoService {
         String t = s.trim();
         return t.isEmpty() ? null : t;
     }
+//nuevo metodo para listar los videojuegos de la empresa del usuario logueado ptm
+    public List<com.vaqueras.model.VideojuegoEmpresaDTO> listarMisVideojuegos(int idUserEmpresa) {
+    Integer idEmpresa = usuarioEmpresaDAO.findFirstEmpresaIdByUser(idUserEmpresa);
+    if (idEmpresa == null) {
+        throw new IllegalArgumentException("Usuario EMPRESA no asociado a empresa");
+    }
+    return videojuegoDAO.listByEmpresa(idEmpresa);
+}
+
+public VideojuegoDetailDTO detalleMiVideojuego(int idUserEmpresa, int idVideojuego) {
+    Integer idEmpresa = usuarioEmpresaDAO.findFirstEmpresaIdByUser(idUserEmpresa);
+    if (idEmpresa == null) {
+        throw new IllegalArgumentException("Usuario EMPRESA no asociado a empresa");
+    }
+
+    if (!videojuegoDAO.belongsToEmpresa(idVideojuego, idEmpresa)) {
+        throw new SecurityException("No autorizado: el juego no pertenece a tu empresa");
+    }
+
+    // Reutilizamos el detalle ya armado categorías + multimedia
+    VideojuegoDetailDTO d = detallePublico(idVideojuego);
+    return d; // puede ser null si no existe
+}
 }
