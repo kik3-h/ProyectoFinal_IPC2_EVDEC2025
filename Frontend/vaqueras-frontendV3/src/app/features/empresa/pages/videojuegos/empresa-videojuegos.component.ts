@@ -120,6 +120,9 @@ import {
                 {{saving?'Guardando...':'Guardar cambios'}}
               </button>
               <button class="btn btn-danger" (click)="suspender(editing.idVideojuego)">Suspender venta</button>
+              <button class="btn btn-danger" (click)="eliminarDefinitivamente(editing.idVideojuego)" [disabled]="saving">
+                <i class="bi bi-trash"></i> Eliminar
+              </button>
               <a class="btn btn-outline-secondary"
                  [routerLink]="['/empresa/multimedia']"
                  [queryParams]="{ juegoId: editing.idVideojuego }">
@@ -310,6 +313,28 @@ export class EmpresaVideojuegosComponent {
     this.svc.detailMine(id).subscribe({
       next: (d) => this.detailJson = JSON.stringify(d, null, 2),
       error: (e) => this.alert = {type:'err', msg: e?.error?.error || 'Error obteniendo detalle'}
+    });
+  }
+  //metodo nuevo para borrar permanentemente juegos
+  eliminarDefinitivamente(id: number) {
+    if(!confirm('¿Estás seguro de ELIMINAR este juego? Se borrará todo (imágenes, datos) y no se puede recuperar.')) {
+      return;
+    }
+    
+    this.alert = null;
+    this.saving = true; // Usamos saving para bloquear botones
+
+    this.svc.deletePermanent(id).subscribe({
+      next: () => {
+        this.saving = false;
+        this.alert = {type:'ok', msg:'Videojuego eliminado correctamente'};
+        this.cancelEdit(); // Cerramos el editor
+        this.load(); // Recargamos la lista
+      },
+      error: (e) => {
+        this.saving = false;
+        this.alert = {type:'err', msg: e?.error?.error || 'Error eliminando videojuego'};
+      }
     });
   }
 }

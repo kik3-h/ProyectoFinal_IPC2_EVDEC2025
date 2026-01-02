@@ -73,4 +73,9 @@ export class EmpresaVideojuegosService {
   getCoverUrl(id: number): string {
     return `${this.base}/empresa/videojuegos/imagen/${id}`;
   }
+  // Metodo nuevo jss Eliminar permanentemente un videojuego
+  deletePermanent(id: number) {
+    // Enviamos el parámetro ?modo=PERMANENTE
+    return this.http.delete<{message:string}>(`${this.base}/empresa/videojuegos/${id}?modo=PERMANENTE`);
+  }
 }
