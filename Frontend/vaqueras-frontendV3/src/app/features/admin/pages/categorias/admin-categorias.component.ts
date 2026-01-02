@@ -86,7 +86,7 @@ export class AdminCategoriasComponent {
   }
 
   remove(id: number) {
-    this.svc.delete(id).subscribe({
+    this.svc.remove(id).subscribe({
       next: () => { this.alert = { type:'ok', msg:'Categoría eliminada' }; this.load(); },
       error: () => this.alert = { type:'err', msg:'Error eliminando categoría' }
     });

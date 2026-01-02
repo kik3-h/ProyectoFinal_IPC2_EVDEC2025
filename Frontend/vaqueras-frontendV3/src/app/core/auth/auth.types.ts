@@ -2,9 +2,9 @@ export type Role = 'ADMIN' | 'EMPRESA' | 'GAMER';
 
 export interface TokenUser {
   idUser: number;
-  rol: Role;
   nickname?: string;
   correo?: string;
+  rol: Role;
 }
 
 export interface SessionResponse {
@@ -14,7 +14,10 @@ export interface SessionResponse {
 
 export interface LoginResponse {
   token: string;
-  user?: TokenUser;
+  idUser: number;
+  nickname: string;
+  email: string; 
+  rol: string;
 }
 
 export interface LoginRequest {

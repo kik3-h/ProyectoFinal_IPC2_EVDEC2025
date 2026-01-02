@@ -1,1 +1,32 @@
-/* You can add global styles to this file, and also import other style files */
+:root{
+  --vaq-primary:#004d98;
+  --vaq-secondary:#a50044;
+}
+
+html,body{height:100%}
+body{
+  margin:0;
+  background: linear-gradient(135deg, var(--vaq-primary) 0%, var(--vaq-primary) 50%, var(--vaq-secondary) 50%, var(--vaq-secondary) 100%);
+  background-attachment: fixed;
+}
+
+/* “Tarjeta” blanca para que el contenido sea legible */
+.vaq-surface{
+  background: rgba(255,255,255,0.94);
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+  padding: 18px;
+}
+
+/* utilidades */
+.bg-vaq-primary{background:var(--vaq-primary)!important}
+.bg-vaq-secondary{background:var(--vaq-secondary)!important}
+.text-vaq-primary{color:var(--vaq-primary)!important}
+.text-vaq-secondary{color:var(--vaq-secondary)!important}
+
+.btn-vaq{background:var(--vaq-primary);color:#fff;border:none}
+.btn-vaq:hover{filter:brightness(1.07);color:#fff}
+.btn-vaq-secondary{background:var(--vaq-secondary);color:#fff;border:none}
+.btn-vaq-secondary:hover{filter:brightness(1.07);color:#fff}
+.btn-vaq-outline{background:transparent;color:var(--vaq-primary);border:2px solid var(--vaq-primary)}
+.btn-vaq-outline:hover{background:var(--vaq-primary);color:#fff}
