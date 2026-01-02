@@ -233,8 +233,13 @@ export class EmpresaVideojuegosComponent {
   }
 
   cover(v: VideojuegoEmpresaDTO){
-    const url = this.svc.getCoverUrl(v.idVideojuego);
-    return url || 'assets/banner-placeholder.jpg';
+    // const url = this.svc.getCoverUrl(v.idVideojuego);
+    //return url || 'assets/banner-placeholder.jpg';
+
+    if (v.portadaUrl && v.portadaUrl.trim() !== '') {
+      return v.portadaUrl; 
+    }
+    return 'assets/banner-placeholder.jpg';
   }
 
   onImgError(ev: Event){
