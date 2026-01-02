@@ -9,11 +9,11 @@ export interface VideojuegoEmpresaDTO {
   precio?: number;
   precioBase?: number; 
 
-  estado?: string; // 'PENDIENTE', 'ACTIVO', 'SUSPENDIDO'
   clasificacionEdad?: string;
   edadMinima?: number;
   recursosMinimos?: string; 
   fechaPublicacion?: string;
+  estado?: string; // 'PENDIENTE', 'ACTIVO', 'SUSPENDIDO'
   portadaUrl?: string;     
 }
 
@@ -26,6 +26,8 @@ export interface VideojuegoCreateRequest {
   edadMinima?: number;
   recursosMinimos?: string;
   fechaPublicacion?: string; // Formato "YYYY-MM-DD"
+  estado: string;       
+  portadaUrl?: string;  
 }
 
 // Partial hace que todos los campos de Create sean opcionales para Update

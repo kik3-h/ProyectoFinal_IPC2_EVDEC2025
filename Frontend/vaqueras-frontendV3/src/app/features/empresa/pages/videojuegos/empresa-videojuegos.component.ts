@@ -49,6 +49,14 @@ import {
               <input class="form-control" [(ngModel)]="create.clasificacionEdad" name="cclas" placeholder="E/T/M">
             </div>
             <div class="col-md-3">
+              <label class="form-label">Estado Inicial</label>
+              <select class="form-select" [(ngModel)]="create.estado" name="cestado">
+                <option value="ACTIVO">ACTIVO</option>
+                <option value="SUSPENDIDO">SUSPENDIDO</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
               <label class="form-label">Edad mínima</label>
               <input class="form-control" type="number" [(ngModel)]="create.edadMinima" name="cedad">
             </div>
@@ -64,7 +72,13 @@ import {
               <label class="form-label">Descripción</label>
               <textarea class="form-control" rows="2" [(ngModel)]="create.descripcion" name="cdesc"></textarea>
             </div>
-
+              <div class="col-12">
+              <label class="form-label">URL de Portada</label>
+              <input class="form-control" [(ngModel)]="create.portadaUrl" name="cportada" placeholder="http://...">
+              <div class="form-text text-muted">
+                Ingresa una URL o escribe "PENDIENTE" si subirás una foto después.
+              </div>
+            </div>
             <div class="col-12">
               <button class="btn btn-vaq" (click)="crear()" [disabled]="creating">
                 {{creating?'Creando...':'Crear'}}
@@ -207,10 +221,12 @@ export class EmpresaVideojuegosComponent {
     titulo: '',
     descripcion: '',
     precio: 0,
-    clasificacionEdad: '',
+    clasificacionEdad: 'E',
     edadMinima: 0,
     recursosMinimos: '',
-    fechaPublicacion: ''
+    fechaPublicacion: '',
+    estado: 'ACTIVO',       // <--- NUEVO: Valor por defecto
+    portadaUrl: ''
   };
 
   edit: VideojuegoUpdateRequest = {};
@@ -252,13 +268,19 @@ export class EmpresaVideojuegosComponent {
       this.alert = {type:'err', msg:'Título requerido'};
       return;
     }
+
+    if (!this.create.portadaUrl || this.create.portadaUrl.trim() === '') {
+       this.create.portadaUrl = 'assets/banner-placeholder.jpg'; 
+       //  la palabra 'PENDIENTE'
+    }
+
     this.creating = true;
     this.svc.create(this.create).subscribe({
       next: () => {
         this.creating = false;
         this.alert = {type:'ok', msg:'Videojuego creado'};
         this.showCreate = false;
-        this.create = { titulo:'', descripcion:'', precio:0, clasificacionEdad:'', edadMinima:0, recursosMinimos:'', fechaPublicacion:'' };
+        this.create = { titulo:'', descripcion:'', precio:0, clasificacionEdad:'', edadMinima:0, recursosMinimos:'', fechaPublicacion:'', estado:'ACTIVO', portadaUrl:'' };
         this.load();
       },
       error: (e) => {
