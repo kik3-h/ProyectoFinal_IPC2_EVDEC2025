@@ -249,6 +249,16 @@ public class VideojuegoDAO {
         throw new RuntimeException("Error listando videojuegos por empresa: " + e.getMessage(), e);
     }
 }
+    // Método nuevo para ELIMINAR FÍSICAMENTE (Borrado permanente de una imagen y videojuego)
+    public boolean deletePermanent(Connection conn, int idVideojuego, int idEmpresa) throws SQLException {
+        String sql = "DELETE FROM videojuego WHERE id_videojuego = ? AND id_empresa = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idVideojuego);
+            ps.setInt(2, idEmpresa);
+            // Si devuelve > 0 es que borró algo, si devuelve 0 es que no existía o no era de esa empresa
+            return ps.executeUpdate() > 0;
+        }
+    }
 
 
 }

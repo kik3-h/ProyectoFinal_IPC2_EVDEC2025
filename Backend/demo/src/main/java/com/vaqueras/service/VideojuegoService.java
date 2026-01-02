@@ -261,4 +261,37 @@ public VideojuegoDetailDTO detalleMiVideojuego(int idUserEmpresa, int idVideojue
     VideojuegoDetailDTO d = detallePublico(idVideojuego);
     return d; // puede ser null si no existe
 }
+    //metodo nuevo para eliminar permanentemente un videojuego de la DB
+    public void eliminarPermanente(int idUserEmpresa, int idVideojuego) {
+        Integer idEmpresa = usuarioEmpresaDAO.findFirstEmpresaIdByUser(idUserEmpresa);
+        if (idEmpresa == null) throw new IllegalArgumentException("Usuario EMPRESA no asociado a empresa");
+
+        // Verificamos pertenencia
+        if (!videojuegoDAO.belongsToEmpresa(idVideojuego, idEmpresa)) {
+            throw new SecurityException("No autorizado: el juego no pertenece a tu empresa");
+        }
+
+        Connection conn = null;
+        try {
+            conn = db.conectar();
+            conn.setAutoCommit(false);
+
+            // Llamamos al DAO de borrado
+            boolean ok = videojuegoDAO.deletePermanent(conn, idVideojuego, idEmpresa);
+            
+            if (!ok) throw new IllegalArgumentException("No se pudo eliminar el videojuego (no encontrado)");
+
+            conn.commit();
+
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
+            throw new RuntimeException("Error eliminando videojuego: " + e.getMessage(), e);
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
+            }
+        }
+    }
 }
