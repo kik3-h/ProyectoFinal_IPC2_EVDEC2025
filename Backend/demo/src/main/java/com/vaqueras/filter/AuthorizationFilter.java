@@ -78,6 +78,7 @@ public class AuthorizationFilter implements Filter {
     private boolean isPublic(String path, String method) {
         if (path.equals("/api/auth/login")) return true;
         if (path.equals("/api/auth/logout")) return true;
+        if (path.startsWith("/api/public/")) return true;
         if (path.equals("/api/usuarios") && "POST".equalsIgnoreCase(method)) return true;
         if ("GET".equalsIgnoreCase(method)) {
             
@@ -85,6 +86,7 @@ public class AuthorizationFilter implements Filter {
             if (path.startsWith("/api/banners/imagen")) return true;
             if (path.startsWith("/api/multimedia/imagen")) return true;
             if (path.startsWith("/api/usuarios/avatar")) return true;
+            if (path.startsWith("/api/banners/imagen")) return true;
 
             // alfinal por errores uso startsWith para permitir
             // - /api/empresas (Lista)
