@@ -43,4 +43,6 @@ export class GamerBibliotecaComponent implements OnInit {
   private errMsg(e: any): string {
     return e?.error?.error ?? e?.error?.mensaje ?? e?.message ?? 'Error';
   }
+
+  
 }

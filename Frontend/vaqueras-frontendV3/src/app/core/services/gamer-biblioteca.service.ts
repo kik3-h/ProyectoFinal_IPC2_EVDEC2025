@@ -23,4 +23,9 @@ export class GamerBibliotecaService {
   setInstalado(idVideojuego: number, instalado: boolean) {
     return this.http.put(`${this.base}/gamer/biblioteca/instalacion/${idVideojuego}`, { instalado });
   }
+
+  instalar(idVideojuego: number) {
+  const body = { idVideojuego, instalado: true };
+  return this.http.put(`${this.base}/gamer/biblioteca/instalacion`, body, { withCredentials: true });
+}
 }
