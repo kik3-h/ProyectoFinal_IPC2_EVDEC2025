@@ -76,7 +76,7 @@ public class MultimediaDAO {
 
                     // LOGICA HÍBRIDA
                     if (hasBlob && (url == null || url.isBlank())) {
-                        url = "/vaqueras-backend/api/public/imagenes/" + id;
+                        url = "/api/public/imagenes/" + id;
                     }
 
                     out.add(new MultimediaDTO(
