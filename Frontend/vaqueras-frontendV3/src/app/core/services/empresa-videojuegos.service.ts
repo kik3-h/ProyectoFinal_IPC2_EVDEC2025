@@ -71,7 +71,8 @@ export class EmpresaVideojuegosService {
 
   // Generar URL de imagen para el HTML (con soporte para cache busting ?t=...)
   getCoverUrl(id: number): string {
-    return `${this.base}/empresa/videojuegos/imagen/${id}`;
+    //return `${this.base}/empresa/videojuegos/imagen/${id}`;
+    return `${this.base}/public/imagenes/${id}`;
   }
   // Metodo nuevo jss Eliminar permanentemente un videojuego
   deletePermanent(id: number) {
