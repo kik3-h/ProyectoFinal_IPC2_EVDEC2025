@@ -157,8 +157,8 @@ public class EmpresaVideojuegoController extends HttpServlet {
             resp.getWriter().write("{\"error\":\"Error interno\"}");
         }
     }
-
-    @Override
+    //realice modificacion en el metodo delete para borrar videojuegos permanentemente
+    /*@Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json; charset=UTF-8");
 
@@ -183,6 +183,55 @@ public class EmpresaVideojuegoController extends HttpServlet {
 
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("{\"message\":\"Venta suspendida\"}");
+
+        } catch (SecurityException e) {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        } catch (IllegalArgumentException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"error\":\"Error interno\"}");
+        }
+    }*/
+    //metodo nuevo doDelete modificado para eliminar videojuegos permanentemente o suspenderlos
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json; charset=UTF-8");
+
+        Integer idUser = getAuthUserId(req);
+        if (idUser == null) {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            resp.getWriter().write("{\"error\":\"Token requerido\"}");
+            return;
+        }
+
+        String path = req.getPathInfo(); // "/{id}"
+        if (path == null || !path.matches("/\\d+")) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"ID inválido\"}");
+            return;
+        }
+
+        int idVideojuego = Integer.parseInt(path.substring(1));
+        
+        // LEEMOS EL PARÁMETRO DE MODO
+        String modo = req.getParameter("modo"); // Puede ser null, "SUSPENDER" o "PERMANENTE"
+
+        try {
+            if ("PERMANENTE".equalsIgnoreCase(modo)) {
+                // Borrado físico (Para limpiar juegos rotos)
+                service.eliminarPermanente(idUser, idVideojuego);
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.getWriter().write("{\"message\":\"Videojuego eliminado permanentemente\"}");
+            } else {
+                // Suspensión lógica (Comportamiento por defecto)
+                service.suspender(idUser, idVideojuego);
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.getWriter().write("{\"message\":\"Venta suspendida\"}");
+            }
 
         } catch (SecurityException e) {
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
