@@ -1,23 +1,85 @@
-:root{
-  --vaq-primary: #004d98;   /* color inspirado en el barca jaja */
-  --vaq-secondary: #a50044; /* vamoos */
+/* Estilos personalizados para Vaqueras */
+:root {
+  --vaq-blue: #004d98;
+  --vaq-grana: #a50044;
+  --vaq-gold: #edbb00;
+  --vaq-dark: #0b1b3a; 
+  --vaq-light: #cc7e18;
+}
+/* Estilos generales */
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+/* Estilos para el cuerpo */
+body {
+  margin: 0;
+  background-color: var(--vaq-dark);
+  color: #86f508; 
+  background: 
+    radial-gradient(1200px 600px at 10% 10%, rgba(0,77,152, 0.4), transparent 60%),
+    radial-gradient(900px 500px at 90% 20%, rgba(165,0,68, 0.3), transparent 55%),
+    linear-gradient(135deg, #0b1b3a 0%, #050e1f 100%);
+  background-attachment: fixed; 
 }
 
-.bg-vaq-primary { background: var(--vaq-primary) !important; }
-.bg-vaq-secondary { background: var(--vaq-secondary) !important; }
-.text-vaq-primary { color: var(--vaq-primary) !important; }
-.text-vaq-secondary { color: var(--vaq-secondary) !important; }
+/* Estilos para los botones y elementos */
+.bg-vaq-blue { background-color: var(--vaq-blue) !important; }
+.bg-vaq-grana { background-color: var(--vaq-grana) !important; }
+.text-vaq-blue { color: var(--vaq-blue) !important; }
+.text-vaq-grana { color: var(--vaq-grana) !important; }
+.text-vaq-gold { color: var(--vaq-gold) !important; }
 
-.btn-vaq {
-  background: var(--vaq-primary);
-  color: #fff;
+.btn-vaq-primary {
+  background-color: var(--vaq-blue);
+  border-color: var(--vaq-blue);
+  color: rgb(233, 10, 10);
+  transition: all 0.3s ease;
+}
+.btn-vaq-primary:hover {
+  background-color: #003a75; 
+  filter: brightness(1.1);
+  box-shadow: 0 0 10px rgba(0, 77, 152, 0.6); 
+}
+
+.btn-vaq-secondary {
+  background-color: var(--vaq-grana);
+  border-color: var(--vaq-grana);
+  color: rgb(30, 16, 221);
+  transition: all 0.3s ease;
+}
+.btn-vaq-secondary:hover {
+  background-color: #7a0033;
+  filter: brightness(1.1);
+  box-shadow: 0 0 10px rgba(165, 0, 68, 0.6);
+}
+
+
+.navbar {
+  background: rgba(11, 27, 58, 0.85) !important; 
+  backdrop-filter: blur(10px); 
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.card {
+  background-color: rgba(30, 41, 59, 0.7); 
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgb(22, 216, 87);
+  backdrop-filter: blur(5px);
+}
+
+.admin-panel .card {
+  background-color: rgb(157, 231, 20);
+  color: #333;
+}
+
+.nav-tabs .nav-link {
+  color: rgba(228, 16, 104, 0.6);
   border: none;
 }
-.btn-vaq:hover { filter: brightness(1.05); }
-
-.btn-vaq-secondary{
-  background: var(--vaq-secondary);
-  color: #fff;
-  border: none;
+.nav-tabs .nav-link.active {
+  background-color: transparent;
+  color: var(--vaq-gold);
+  border-bottom: 3px solid var(--vaq-grana);
+  font-weight: bold;
 }
-.btn-vaq-secondary:hover { filter: brightness(1.05); }

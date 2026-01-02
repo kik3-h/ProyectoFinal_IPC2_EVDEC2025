@@ -4,23 +4,19 @@ import { environment } from '../../../environments/environment';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BibliotecaItem } from '../models/gamer.models';
-import { normalizeApiUrl } from '../utils/url.util';
 
 @Injectable({ providedIn: 'root' })
-export class GamerBibliotecaService {
+export class BibliotecaService {
   private base = environment.apiBaseUrl;
   constructor(private http: HttpClient) {}
 
-  // GET /api/gamer/biblioteca
-  listar(): Observable<BibliotecaItem[]> {
+  listarMiBiblioteca(): Observable<BibliotecaItem[]> {
     return this.http.get<any>(`${this.base}/gamer/biblioteca`).pipe(
-      map((r) => Array.isArray(r) ? r : (r?.biblioteca ?? r?.data ?? [])),
-      map((arr: BibliotecaItem[]) => arr.map(x => ({ ...x, portadaUrl: normalizeApiUrl(x.portadaUrl ?? null) })))
+      map(r => Array.isArray(r) ? r : (r?.biblioteca ?? r?.data ?? []))
     );
   }
 
-  // PUT /api/gamer/biblioteca/instalacion/{id}
-  setInstalado(idVideojuego: number, instalado: boolean) {
+  setInstalacion(idVideojuego: number, instalado: boolean): Observable<any> {
     return this.http.put(`${this.base}/gamer/biblioteca/instalacion/${idVideojuego}`, { instalado });
   }
 }

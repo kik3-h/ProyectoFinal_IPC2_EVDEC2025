@@ -1,15 +1,19 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
+  selector: 'empresa-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterModule],
   template: `
-    <div class="d-flex flex-wrap gap-2 mb-3">
-      <a class="btn btn-sm btn-vaq" routerLink="videojuegos" routerLinkActive="active">Videojuegos</a>
-      <a class="btn btn-sm btn-vaq" routerLink="multimedia" routerLinkActive="active">Multimedia</a>
-    </div>
-    <router-outlet></router-outlet>
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <a class="btn btn-sm btn-vaq" routerLink="/empresa/videojuegos" routerLinkActive="active">Mis Videojuegos</a>
+    <a class="btn btn-sm btn-vaq-secondary" routerLink="/empresa/multimedia" routerLinkActive="active">Multimedia</a>
+  </div>
+
+  <router-outlet></router-outlet>
   `
 })
 export class EmpresaLayoutComponent {}
+

@@ -1,55 +1,97 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GamerGruposService } from '../../../../core/services/gamer-grupos.service';
+import { GruposService, Grupo, Miembro } from '../../../../core/services/grupos.service';
 
 @Component({
+  selector: 'app-gamer-grupos',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <h3 class="text-vaq-primary fw-bold">Grupos familiares</h3>
-
-    <div class="card shadow-sm mb-3">
-      <div class="card-body">
-        <div class="row g-2">
-          <div class="col-md-6">
-            <label class="form-label">Nombre del grupo</label>
-            <input class="form-control" [(ngModel)]="nombreGrupo" name="nombreGrupo">
-          </div>
-          <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-vaq w-100" (click)="crear()">Crear</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn btn-sm btn-vaq mb-2" (click)="load()">Refrescar</button>
-
-    <ul class="list-group">
-      @for (g of grupos; track g.idGrupo || g.id) {
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-bold">{{ g.nombreGrupo || g.nombre }}</div>
-            <div class="small text-muted">ID: {{ g.idGrupo || g.id }}</div>
-          </div>
-        </li>
-      }
-    </ul>
-  `
+  templateUrl: './gamer-grupos.component.html',
 })
-export class GamerGruposComponent {
-  private svc = inject(GamerGruposService);
+export class GamerGruposComponent implements OnInit {
+  loading = false;
+  error: string | null = null;
 
+  grupos: Grupo[] = [];
+  grupoSeleccionado: Grupo | null = null;
+
+  miembros: Miembro[] = [];
+
+  // forms
   nombreGrupo = '';
-  grupos: any[] = [];
+  nicknameInvitado = '';
 
-  ngOnInit() { this.load(); }
+  constructor(private gruposService: GruposService) {}
 
-  load() {
-    this.svc.listar().subscribe({ next: d => this.grupos = d ?? [], error: () => this.grupos = [] });
+  ngOnInit(): void {
+    this.cargarGrupos();
   }
 
-  crear() {
-    this.svc.crear(this.nombreGrupo.trim()).subscribe({ next: () => { this.nombreGrupo=''; this.load(); }});
+  cargarGrupos() {
+    this.loading = true;
+    this.error = null;
+
+    this.gruposService.listarMisGrupos().subscribe({
+      next: (data) => {
+        this.grupos = Array.isArray(data) ? data : [];
+        this.loading = false;
+
+        if (this.grupos.length) {
+          this.seleccionarGrupo(this.grupos[0]);
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error?.error || 'No se pudieron cargar tus grupos';
+      },
+    });
+  }
+
+  crearGrupo() {
+    this.error = null;
+    const nombre = this.nombreGrupo.trim();
+    if (!nombre) return;
+
+    // OJO: si tu backend espera "nombre" y no "nombreGrupo", cambia aquí.
+    this.gruposService.crearGrupo({ nombreGrupo: nombre }).subscribe({
+      next: () => {
+        this.nombreGrupo = '';
+        this.cargarGrupos();
+      },
+      error: (err) => {
+        this.error = err?.error?.error || 'Error creando grupo (revisa el body esperado por backend)';
+      },
+    });
+  }
+
+  seleccionarGrupo(g: Grupo) {
+    this.grupoSeleccionado = g;
+    this.cargarMiembros();
+  }
+
+  cargarMiembros() {
+    if (!this.grupoSeleccionado) return;
+
+    this.error = null;
+    this.gruposService.listarMiembros(this.grupoSeleccionado.idGrupo).subscribe({
+      next: (data) => (this.miembros = Array.isArray(data) ? data : []),
+      error: (err) => (this.error = err?.error?.error || 'No se pudieron cargar miembros'),
+    });
+  }
+
+  invitar() {
+    if (!this.grupoSeleccionado) return;
+    const nick = this.nicknameInvitado.trim();
+    if (!nick) return;
+
+    this.error = null;
+    this.gruposService.agregarMiembro(this.grupoSeleccionado.idGrupo, { nickname: nick }).subscribe({
+      next: () => {
+        this.nicknameInvitado = '';
+        this.cargarMiembros();
+      },
+      error: (err) => (this.error = err?.error?.error || 'No se pudo invitar (nickname inválido o ya tiene grupo)'),
+    });
   }
 }

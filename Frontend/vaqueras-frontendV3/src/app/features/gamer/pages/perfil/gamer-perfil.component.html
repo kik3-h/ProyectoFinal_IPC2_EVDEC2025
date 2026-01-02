@@ -1,0 +1,36 @@
+<div class="card vaq-card">
+  <div class="card-body">
+    <h3>Perfil</h3>
+
+    @if (alert) {
+      <div class="alert" [class.alert-success]="alert.type==='success'" [class.alert-danger]="alert.type==='danger'">
+        {{alert.msg}}
+      </div>
+    }
+
+    @if (loading) {
+      <div class="text-muted py-3">Cargando...</div>
+    } @else {
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nickname</label>
+          <input class="form-control" [(ngModel)]="perfil.nickname">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <input class="form-control" [(ngModel)]="perfil.email">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nombre</label>
+          <input class="form-control" [(ngModel)]="perfil.nombre">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fecha nacimiento</label>
+          <input type="date" class="form-control" [(ngModel)]="perfil.fechaNacimiento">
+        </div>
+      </div>
+
+      <button class="btn btn-primary mt-3" (click)="guardar()">Guardar</button>
+    }
+  </div>
+</div>

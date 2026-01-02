@@ -1,0 +1,60 @@
+<div class="card vaq-card">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center">
+      <h3 class="mb-0">Mi Biblioteca</h3>
+      <button class="btn btn-outline-primary" (click)="refrescar()">Refrescar</button>
+    </div>
+
+    @if (alert) {
+      <div class="alert mt-3" [class.alert-success]="alert.type==='success'" [class.alert-danger]="alert.type==='danger'">
+        {{alert.msg}}
+      </div>
+    }
+
+    @if (loading) {
+      <div class="py-4 text-muted">Cargando...</div>
+    } @else {
+      @if (!items.length) {
+        <div class="text-muted py-3">Aún no has comprado videojuegos.</div>
+      } @else {
+        <div class="table-responsive mt-3">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Juego</th>
+                <th>Estado</th>
+                <th style="width: 220px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (i of items; track i.idVideojuego) {
+                <tr>
+                  <td>
+                    <div class="d-flex gap-2 align-items-center">
+                      <img [src]="i.portadaUrl || 'assets/placeholder.jpg'" style="width:64px;height:40px;object-fit:cover;border-radius:6px;">
+                      <div>
+                        <div class="fw-semibold">{{i.titulo}}</div>
+                        <div class="small text-muted">ID: {{i.idVideojuego}}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge" [class.text-bg-success]="i.instalado" [class.text-bg-secondary]="!i.instalado">
+                      {{ i.instalado ? 'Instalado' : 'No instalado' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <a class="btn btn-outline-primary btn-sm me-2" [routerLink]="['/gamer/tienda', i.idVideojuego]">Ver</a>
+                    <button class="btn btn-primary btn-sm" (click)="toggle(i)">
+                      {{ i.instalado ? 'Desinstalar' : 'Instalar' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </div>
+</div>

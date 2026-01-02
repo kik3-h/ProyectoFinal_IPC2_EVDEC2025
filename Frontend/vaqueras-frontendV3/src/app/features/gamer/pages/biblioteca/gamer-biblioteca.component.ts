@@ -1,50 +1,46 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GamerBibliotecaService, ItemBiblioteca } from '../../../../core/services/gamer-biblioteca.service';
+import { RouterModule } from '@angular/router';
+import { GamerBibliotecaService } from '../../../../core/services/gamer-biblioteca.service';
+import { BibliotecaItem } from '../../../../core/models/gamer.models';
 
 @Component({
+  selector: 'app-gamer-biblioteca',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <h3 class="text-vaq-primary fw-bold">Biblioteca</h3>
-
-    @if (loading) { <div class="alert alert-info">Cargando...</div> }
-
-    <div class="table-responsive">
-      <table class="table table-sm table-striped align-middle">
-        <thead><tr><th>ID</th><th>Título</th><th>Instalación</th><th></th></tr></thead>
-        <tbody>
-          @for (i of items; track i.idVideojuego) {
-            <tr>
-              <td>{{i.idVideojuego}}</td>
-              <td class="fw-bold">{{i.titulo}}</td>
-              <td>{{i.estadoInstalacion || 'N/A'}}</td>
-              <td class="text-end">
-                <button class="btn btn-sm btn-vaq" (click)="set(i.idVideojuego, 'INSTALADO')">Instalar</button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  `
+  imports: [CommonModule, RouterModule],
+  templateUrl: './gamer-biblioteca.component.html',
 })
-export class GamerBibliotecaComponent {
-  private svc = inject(GamerBibliotecaService);
-
+export class GamerBibliotecaComponent implements OnInit {
   loading = true;
-  items: ItemBiblioteca[] = [];
+  items: BibliotecaItem[] = [];
+  alert: { type: 'success' | 'danger'; msg: string } | null = null;
 
-  ngOnInit() { this.load(); }
+  constructor(private api: GamerBibliotecaService) {}
 
-  load() {
-    this.svc.list().subscribe({
-      next: d => { this.items = d ?? []; this.loading = false; },
-      error: () => { this.items = []; this.loading = false; }
+  ngOnInit(): void {
+    this.refrescar();
+  }
+
+  refrescar() {
+    this.loading = true;
+    this.api.listar().subscribe({
+      next: (r) => { this.items = r; this.loading = false; },
+      error: (e) => { this.loading = false; this.alert = { type:'danger', msg: this.errMsg(e) }; }
     });
   }
 
-  set(id: number, estado: string) {
-    this.svc.setInstalacion(id, estado).subscribe({ next: () => this.load() });
+  toggle(i: BibliotecaItem) {
+    const next = !Boolean(i.instalado);
+    this.api.setInstalado(i.idVideojuego, next).subscribe({
+      next: () => {
+        i.instalado = next;
+        this.alert = { type:'success', msg: next ? 'Instalado' : 'Desinstalado' };
+      },
+      error: (e) => this.alert = { type:'danger', msg: this.errMsg(e) }
+    });
+  }
+
+  private errMsg(e: any): string {
+    return e?.error?.error ?? e?.error?.mensaje ?? e?.message ?? 'Error';
   }
 }

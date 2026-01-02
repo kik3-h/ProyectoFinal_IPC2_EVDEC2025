@@ -14,7 +14,12 @@ export const routes: Routes = [
   // AUTH
   { path: 'login', canActivate: [guestGuard], loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
   { path: 'register', canActivate: [guestGuard], loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent) },
-
+  // REGISTRO
+  {
+    path: 'registro',
+    loadComponent: () =>
+      import('./features/registro/registro.component').then(m => m.RegistroComponent),
+  },
   // ROLES 
   {
     path: 'admin',

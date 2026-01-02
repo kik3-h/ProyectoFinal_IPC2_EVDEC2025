@@ -26,6 +26,7 @@
       <div class="d-flex gap-2 align-items-center">
         @if (!isLogged()) {
           <a class="btn btn-sm btn-vaq-secondary" routerLink="/login">Iniciar sesión</a>
+          <a routerLink="/registro" class="btn btn-sm btn-outline-dark ms-1">Crear cuenta</a>
         } @else {
           <span class="text-white small">Hola, {{ me()?.nickname || me()?.correo || 'usuario' }}</span>
           <button class="btn btn-sm btn-vaq" (click)="logout()">Salir</button>

@@ -6,24 +6,15 @@ import { Observable } from 'rxjs';
 import { GamerPerfil } from '../models/gamer.models';
 
 @Injectable({ providedIn: 'root' })
-export class GamerPerfilService {
+export class PerfilGamerService {
   private base = environment.apiBaseUrl;
   constructor(private http: HttpClient) {}
 
-  // GET /api/gamer/perfil
   obtener(): Observable<GamerPerfil> {
     return this.http.get<any>(`${this.base}/gamer/perfil`).pipe(map(r => r?.data ?? r));
   }
 
-  // PUT /api/gamer/perfil
   actualizar(body: Partial<GamerPerfil>) {
     return this.http.put(`${this.base}/gamer/perfil`, body);
-  }
-
-  // opcional: avatar (si tu backend lo tiene)
-  subirAvatar(file: File) {
-    const fd = new FormData();
-    fd.append('file', file);
-    return this.http.put(`${this.base}/usuarios/me/avatar`, fd);
   }
 }

@@ -1,45 +1,38 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GamerPerfilService } from '../../../../core/services/gamer-perfil.service';
+import { GamerPerfil } from '../../../../core/models/gamer.models';
 
 @Component({
+  selector: 'app-gamer-perfil',
   standalone: true,
-  imports: [FormsModule],
-  template: `
-    <h3 class="text-vaq-primary fw-bold">Perfil</h3>
-
-    @if (alert) { <div class="alert" [class.alert-success]="alert.type==='ok'" [class.alert-danger]="alert.type==='err'">{{alert.msg}}</div> }
-
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <label class="form-label">Nickname</label>
-        <input class="form-control mb-2" [(ngModel)]="perfil.nickname" name="nickname">
-
-        <label class="form-label">Correo</label>
-        <input class="form-control mb-3" [(ngModel)]="perfil.correo" name="correo">
-
-        <button class="btn btn-vaq" (click)="save()">Guardar</button>
-      </div>
-    </div>
-  `
+  imports: [CommonModule, FormsModule],
+  templateUrl: './gamer-perfil.component.html',
 })
-export class GamerPerfilComponent {
-  private svc = inject(GamerPerfilService);
+export class GamerPerfilComponent implements OnInit {
+  loading = true;
+  perfil: GamerPerfil = {};
 
-  perfil: any = {};
-  alert: { type:'ok'|'err', msg:string } | null = null;
+  alert: { type: 'success' | 'danger'; msg: string } | null = null;
 
-  ngOnInit() {
-    this.svc.get().subscribe({
-      next: d => this.perfil = d ?? {},
-      error: () => this.alert = { type:'err', msg:'Error cargando perfil' }
+  constructor(private api: GamerPerfilService) {}
+
+  ngOnInit(): void {
+    this.api.obtener().subscribe({
+      next: (p) => { this.perfil = p ?? {}; this.loading = false; },
+      error: (e) => { this.loading = false; this.alert = { type:'danger', msg: this.errMsg(e) }; }
     });
   }
 
-  save() {
-    this.svc.update(this.perfil).subscribe({
-      next: () => this.alert = { type:'ok', msg:'Perfil actualizado' },
-      error: () => this.alert = { type:'err', msg:'Error guardando perfil' }
+  guardar() {
+    this.api.actualizar(this.perfil).subscribe({
+      next: () => this.alert = { type:'success', msg:'Perfil actualizado.' },
+      error: (e) => this.alert = { type:'danger', msg: this.errMsg(e) }
     });
+  }
+
+  private errMsg(e: any): string {
+    return e?.error?.error ?? e?.error?.mensaje ?? e?.message ?? 'Error';
   }
 }

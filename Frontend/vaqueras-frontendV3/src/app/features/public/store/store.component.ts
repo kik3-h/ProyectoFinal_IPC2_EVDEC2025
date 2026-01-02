@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { VideojuegosService, Videojuego } from '../../../core/services/videojuegos.service';
+import { VideojuegosService } from '../../../core/services/videojuegos.service';
+import { VideojuegoPublic } from '../../../core/models/videojuego.models';
 
 @Component({
   standalone: true,
@@ -22,11 +23,11 @@ import { VideojuegosService, Videojuego } from '../../../core/services/videojueg
               <div class="card shadow-sm h-100">
                 <div class="card-body">
                   <h5 class="fw-bold text-vaq-primary">{{ v.titulo }}</h5>
-                  <p class="text-muted small">{{ v.descripcion || 'Sin descripción' }}</p>
+                  <p class="text-muted small">{{ v.nombreEmpresa || 'Sin descripción' }}</p>
 
                   <div class="d-flex justify-content-between align-items-center">
                     <span class="fw-bold">{{ (v.precio ?? 0) | currency:'GTQ' }}</span>
-                    <span class="badge bg-vaq-secondary">{{ v.clasificacion || 'N/A' }}</span>
+                    <span class="badge bg-vaq-secondary">{{ v.clasificacionEdad || 'N/A' }}</span>
                   </div>
                 </div>
               </div>
@@ -41,7 +42,7 @@ export class StoreComponent {
   private svc = inject(VideojuegosService);
 
   loading = true;
-  items: Videojuego[] = [];
+  items: VideojuegoPublic[] = [];
 
   ngOnInit() {
     this.svc.listPublic().subscribe({

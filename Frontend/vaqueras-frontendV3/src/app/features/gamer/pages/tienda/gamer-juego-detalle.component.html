@@ -1,0 +1,75 @@
+@if (loading) {
+  <div class="text-muted py-4">Cargando...</div>
+} @else {
+  @if (alert) {
+    <div class="alert" [class.alert-success]="alert.type==='success'" [class.alert-danger]="alert.type==='danger'">
+      {{alert.msg}}
+    </div>
+  }
+
+  <a class="btn btn-link p-0 mb-2" routerLink="/gamer/tienda">← Volver</a>
+
+  <div class="card vaq-card">
+    <div class="row g-0">
+      <div class="col-md-5">
+        <img class="w-100" style="height: 320px; object-fit: cover;"
+             [src]="juego?.portadaUrl || 'assets/placeholder.jpg'">
+      </div>
+      <div class="col-md-7">
+        <div class="card-body">
+          <h3 class="mb-1">{{juego?.titulo}}</h3>
+          <div class="text-muted small mb-2">{{juego?.nombreEmpresa}} · {{juego?.clasificacionEdad}}</div>
+          <p class="mb-2">{{juego?.descripcion}}</p>
+
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="fw-bold fs-5">Q {{juego?.precio}}</div>
+            <button class="btn btn-primary" (click)="comprar()" [disabled]="owned">
+              {{ owned ? 'Comprado' : 'Comprar' }}
+            </button>
+          </div>
+
+          <hr />
+
+          <h5>Comentar</h5>
+          <div class="row g-2">
+            <div class="col-12 col-md-3">
+              <label class="form-label">Estrellas</label>
+              <select class="form-select" [(ngModel)]="estrellas">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="4">4</option>
+                <option [ngValue]="3">3</option>
+                <option [ngValue]="2">2</option>
+                <option [ngValue]="1">1</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-9">
+              <label class="form-label">Comentario</label>
+              <textarea class="form-control" rows="2" [(ngModel)]="texto" placeholder="Escribe tu reseña..."></textarea>
+            </div>
+          </div>
+          <button class="btn btn-outline-primary mt-2" (click)="comentar()">Publicar</button>
+
+          <hr />
+
+          <h5 class="mb-2">Comentarios</h5>
+          @if (!comentarios.length) {
+            <div class="text-muted">Aún no hay comentarios.</div>
+          } @else {
+            <div class="list-group">
+              @for (c of comentarios; track $index) {
+                <div class="list-group-item">
+                  <div class="d-flex justify-content-between">
+                    <b>{{c.nickname || 'Usuario'}}</b>
+                    <span class="badge text-bg-secondary">{{c.estrellas ?? c.puntuacion ?? '-' }}★</span>
+                  </div>
+                  <div class="small text-muted">{{c.fecha || ''}}</div>
+                  <div class="mt-1">{{c.contenido || c.texto || ''}}</div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

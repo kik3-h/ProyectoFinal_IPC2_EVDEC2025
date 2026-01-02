@@ -7,10 +7,16 @@ import { BannersService, Banner } from '../../../core/services/banners.service';
   standalone: true,
   imports: [CommonModule , RouterLink],
   template: `
-    <div class="mb-4">
-  <h2 class="text-vaq-primary fw-bold">Bienvenido al proyecto Final de kike</h2>
-  <p class="text-muted mb-0">Tu tienda de videojuegos al estilo Steam.</p>
-</div>
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="text-vaq-primary fw-bold">Bienvenido al proyecto Final de kike</h2>
+        <p class="text-muted mb-0">Tu tienda de videojuegos al estilo Steam.</p>
+      </div>
+
+      <a routerLink="/registro" class="btn btn-lg btn-vaq-secondary shadow-sm">
+        ¡Crear cuenta gratis!
+      </a>
+    </div>
 
 @if (loading) {
   <div class="alert alert-info">Cargando banners...</div>

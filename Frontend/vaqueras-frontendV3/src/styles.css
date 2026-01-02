@@ -12,9 +12,9 @@ body{
 
 /* “Tarjeta” blanca para que el contenido sea legible */
 .vaq-surface{
-  background: rgba(255,255,255,0.94);
+  background: rgb(245, 243, 243);
   border-radius: 18px;
-  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+  box-shadow: 0 12px 28px rgba(250, 241, 241, 0.12);
   padding: 18px;
 }
 
@@ -24,9 +24,9 @@ body{
 .text-vaq-primary{color:var(--vaq-primary)!important}
 .text-vaq-secondary{color:var(--vaq-secondary)!important}
 
-.btn-vaq{background:var(--vaq-primary);color:#fff;border:none}
-.btn-vaq:hover{filter:brightness(1.07);color:#fff}
-.btn-vaq-secondary{background:var(--vaq-secondary);color:#fff;border:none}
-.btn-vaq-secondary:hover{filter:brightness(1.07);color:#fff}
+.btn-vaq{background:var(--vaq-primary);color:#5bcc9d;border:none}
+.btn-vaq:hover{filter:brightness(1.07);color:#92af41}
+.btn-vaq-secondary{background:var(--vaq-secondary);color:#792ab9;border:none}
+.btn-vaq-secondary:hover{filter:brightness(1.07);color:#d11313}
 .btn-vaq-outline{background:transparent;color:var(--vaq-primary);border:2px solid var(--vaq-primary)}
-.btn-vaq-outline:hover{background:var(--vaq-primary);color:#fff}
+.btn-vaq-outline:hover{background:var(--vaq-primary);color:#3e6baf}

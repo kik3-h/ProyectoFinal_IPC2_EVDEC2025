@@ -1,64 +1,66 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GamerCarteraService } from '../../../../core/services/gamer-cartera.service';
+import { CarteraResumen, RecargaItem } from '../../../../core/models/gamer.models';
 
 @Component({
+  selector: 'app-gamer-cartera',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <h3 class="text-vaq-primary fw-bold">Cartera</h3>
-
-    @if (alert) { <div class="alert" [class.alert-success]="alert.type==='ok'" [class.alert-danger]="alert.type==='err'">{{alert.msg}}</div> }
-
-    <div class="card shadow-sm mb-3">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="text-muted small">Saldo actual</div>
-            <div class="fs-4 fw-bold">{{ saldo | currency:'GTQ' }}</div>
-          </div>
-          <button class="btn btn-sm btn-vaq" (click)="load()">Refrescar</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card shadow-sm mb-3">
-      <div class="card-body">
-        <div class="row g-2">
-          <div class="col-md-4">
-            <label class="form-label">Monto a recargar</label>
-            <input class="form-control" type="number" [(ngModel)]="monto" name="monto">
-          </div>
-          <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-vaq w-100" (click)="recargar()">Recargar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `
+  templateUrl: './gamer-cartera.component.html',
 })
-export class GamerCarteraComponent {
-  private svc = inject(GamerCarteraService);
-
-  saldo = 0;
+export class GamerCarteraComponent implements OnInit {
+  loading = true;
+  resumen: CarteraResumen | null = null;
+  recargas: RecargaItem[] = [];
   monto = 0;
-  alert: { type:'ok'|'err', msg:string } | null = null;
 
-  ngOnInit() { this.load(); }
+  alert: { type: 'success' | 'danger'; msg: string } | null = null;
 
-  load() {
-    this.svc.getCartera().subscribe({
-      next: d => this.saldo = d?.saldo ?? 0,
-      error: () => this.alert = { type:'err', msg:'Error cargando cartera' }
+  constructor(private api: GamerCarteraService) {}
+
+  ngOnInit(): void {
+    this.refrescar();
+  }
+
+  refrescar() {
+    this.loading = true;
+    this.alert = null;
+    Promise.all([
+      this.api.resumen().toPromise(),
+      this.api.recargas().toPromise(),
+    ]).then(([r, list]) => {
+      this.resumen = r ?? null;
+      this.recargas = list ?? [];
+      this.loading = false;
+    }).catch((e) => {
+      this.loading = false;
+      this.alert = { type:'danger', msg: this.errMsg(e) };
     });
   }
 
   recargar() {
-    this.alert = null;
-    this.svc.recargar(this.monto).subscribe({
-      next: () => { this.alert = { type:'ok', msg:'Recarga realizada' }; this.load(); },
-      error: () => this.alert = { type:'err', msg:'Error en recarga' }
+    if (this.monto <= 0) {
+      this.alert = { type:'danger', msg:'Monto inválido.' };
+      return;
+    }
+    this.api.recargar(this.monto).subscribe({
+      next: () => {
+        this.alert = { type:'success', msg:'Recarga realizada.' };
+        this.monto = 0;
+        this.refrescar();
+      },
+      error: (e) => this.alert = { type:'danger', msg: this.errMsg(e) }
     });
+  }
+
+  get saldo(): number {
+    const s = this.resumen?.saldo ?? this.resumen?.saldoActual ?? 0;
+    return Number(s) || 0;
+  }
+
+  private errMsg(e: any): string {
+    return e?.error?.error ?? e?.error?.mensaje ?? e?.message ?? 'Error';
   }
 }

@@ -1,0 +1,44 @@
+<div class="card vaq-card">
+  <div class="card-body">
+    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+      <h3 class="mb-0">Tienda (GAMER)</h3>
+      <input class="form-control" style="max-width: 320px" [(ngModel)]="q" placeholder="Buscar juego..." />
+    </div>
+
+    @if (alert) {
+      <div class="alert mt-3" [class.alert-success]="alert.type==='success'" [class.alert-danger]="alert.type==='danger'">
+        {{alert.msg}}
+      </div>
+    }
+
+    @if (loading) {
+      <div class="py-4 text-muted">Cargando...</div>
+    } @else {
+      <div class="row g-3 mt-1">
+        @for (j of filtered; track j.idVideojuego) {
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+              <img class="card-img-top" [src]="j.portadaUrl || 'assets/placeholder.jpg'" alt="Portada" style="height: 180px; object-fit: cover;" />
+              <div class="card-body">
+                <h5 class="card-title">{{j.titulo}}</h5>
+                <div class="small text-muted">
+                  {{j.nombreEmpresa || ''}} · {{j.clasificacionEdad || ''}}
+                </div>
+                <div class="mt-2 fw-bold">Q {{j.precio}}</div>
+
+                <div class="d-flex gap-2 mt-3">
+                  <a class="btn btn-outline-primary flex-fill" [routerLink]="['/gamer/tienda', j.idVideojuego]">Ver</a>
+                  <button class="btn btn-primary flex-fill"
+                          (click)="comprar(j)"
+                          [disabled]="owned.has(j.idVideojuego)">
+                    {{ owned.has(j.idVideojuego) ? 'Comprado' : 'Comprar' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
