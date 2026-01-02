@@ -20,7 +20,7 @@ public class UsuarioDAO {
         """;
 
         try (Connection con = dbConfig.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, email);
             ps.setString(2, nickname);
@@ -40,7 +40,7 @@ public class UsuarioDAO {
         """;
 
         try (Connection con = dbConfig.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, u.getNickname());
             ps.setString(2, u.getEmail());
@@ -64,7 +64,7 @@ public class UsuarioDAO {
         """;
 
         try (Connection con = dbConfig.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+            PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, identifier);
             ps.setString(2, identifier);
@@ -96,7 +96,7 @@ public class UsuarioDAO {
     List<Usuario> out = new ArrayList<>();
 
     try (Connection con = dbConfig.conectar();
-         PreparedStatement ps = con.prepareStatement(sql)) {
+        PreparedStatement ps = con.prepareStatement(sql)) {
 
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
@@ -126,7 +126,7 @@ public Usuario findById(int id) {
     """;
 
     try (Connection con = dbConfig.conectar();
-         PreparedStatement ps = con.prepareStatement(sql)) {
+        PreparedStatement ps = con.prepareStatement(sql)) {
 
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
@@ -154,7 +154,7 @@ public boolean updateEstadoCuenta(int idUser, String estado) {
     String sql = "UPDATE usuario SET estado_cuenta = ? WHERE id_user = ?";
 
    try (java.sql.Connection con = dbConfig.conectar();
-             java.sql.PreparedStatement ps = con.prepareStatement(sql)) {
+            java.sql.PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, estado);
             ps.setInt(2, idUser);
