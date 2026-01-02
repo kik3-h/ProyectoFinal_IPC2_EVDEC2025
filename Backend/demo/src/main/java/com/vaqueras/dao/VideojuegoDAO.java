@@ -141,7 +141,7 @@ public class VideojuegoDAO {
 
                 // lógica híbrida URL vs BLOB
                 if (hasBlob && (url == null || url.isBlank()) && portadaId > 0) {
-                    url = "/vaqueras-backend/api/public/imagenes/" + portadaId;
+                    url = "/api/public/imagenes/" + portadaId;
                 }
 
                 dto.setPortadaUrl(url);
@@ -235,7 +235,7 @@ public class VideojuegoDAO {
 
                 // lógica híbrida URL vs BLOB (igual que ya haces en MultimediaDAO)
                 if (hasBlob && (url == null || url.isBlank()) && portadaId > 0) {
-                    url = "/vaqueras-backend/api/public/imagenes/" + portadaId;
+                    url = "/api/public/imagenes/" + portadaId;
                 }
                 dto.setPortadaUrl(url);
 
